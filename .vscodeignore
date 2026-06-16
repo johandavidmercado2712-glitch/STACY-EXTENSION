@@ -10,3 +10,7 @@ CHANGELOG.md
 vsc-extension-quickstart.md
 *.vsix
 *.log
+stacy-extension-0.0.3/
+stacy-extension-0.0.6.vsix
+stacy-extension-0.0.7.vsix
+stacy-extension-0.0.8.vsix
