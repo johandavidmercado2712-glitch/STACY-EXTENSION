@@ -1,0 +1,112 @@
+{
+  "name": "stacy-extension",
+  "displayName": "STACY",
+  "description": "Sube y gestiona el historial de comandos de tu terminal desde VS Code. Compatible con Linux, macOS y Windows.",
+  "version": "0.0.6",
+  "publisher": "stacy",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:stacy.login",
+    "onCommand:stacy.logout",
+    "onCommand:stacy.googleLogin",
+    "onCommand:stacy.searchCommands",
+    "onCommand:stacy.importCommand",
+    "onView:stacyWebView",
+    "onCommand:stacy.copyCommand",
+    "onCommand:stacy.refresh"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "stacy.login",
+        "title": "STACY: Login"
+      },
+      {
+        "command": "stacy.logout",
+        "title": "STACY: Logout"
+      },
+      {
+        "command": "stacy.searchCommands",
+        "title": "STACY: Search Commands"
+      },
+      {
+        "command": "stacy.importCommand",
+        "title": "STACY: Import Current Terminal Command"
+      },
+      {
+        "command": "stacy.copyCommand",
+        "title": "STACY: Copy Command"
+      },
+      {
+        "command": "stacy.refresh",
+        "title": "STACY: Refresh"
+      },
+      {
+        "command": "stacy.googleLogin",
+        "title": "STACY: Google Login"
+      }
+    ],
+    "views": {
+      "stacyExplorer": [
+        {
+          "type": "webview",
+          "id": "stacyWebView",
+          "name": "STACY Terminal"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "stacyExplorer",
+          "title": "STACY",
+          "icon": "images/stacy-icon.svg"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "STACY",
+      "properties": {
+        "stacy.serverUrl": {
+          "type": "string",
+          "default": "http://52.87.195.200:8000",
+          "description": "STACY backend server URL"
+        },
+        "stacy.maxCommands": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of recent commands to display"
+        },
+        "stacy.googleClientId": {
+          "type": "string",
+          "default": "",
+          "description": "Google OAuth Client ID (para iniciar sesión con Google)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint src/ test/",
+    "pretest": "npm run lint",
+    "test": "node ./test/index.js",
+    "package": "npx @vscode/vsce package",
+    "compile": "echo 'JavaScript extension - no compilation needed'"
+  },
+  "devDependencies": {
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.24.0",
+    "eslint": "^8.56.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johandavidmercado2712-glitch/STACY-EXTENSION.git"
+  }
+}

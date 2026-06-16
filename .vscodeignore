@@ -1,0 +1,12 @@
+.vscode/**
+.vscode-test/**
+.git/**
+.gitignore
+.eslintrc.json
+jsconfig.json
+test/**
+node_modules/**
+CHANGELOG.md
+vsc-extension-quickstart.md
+*.vsix
+*.log
