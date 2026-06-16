@@ -32,48 +32,55 @@ let _folderCommandCache = {};
 async function refreshAll() {
   if (!stacyAuth.isLoggedIn) return;
   _currentUsername = stacyAuth._username || '';
-  try {
-    const [cmdData, allCmdData, folderData, notesData, profileData] = await Promise.all([
-      stacyClient.getRecentCommands().catch(() => null),
-      stacyClient.getAllCommands().catch(() => null),
-      stacyClient.getFolders().catch(() => null),
-      stacyClient.getNotes().catch(() => null),
-      stacyClient.getProfile().catch(() => null)
-    ]);
 
-    const commands = parseData(cmdData, 'comandos');
-    const allCommands = parseData(allCmdData, 'comandos');
-    const folders = parseData(folderData, 'carpetas');
-    const notes = parseData(notesData, 'notas');
+  const [cmdData, allCmdData, folderData, notesData] = await Promise.all([
+    stacyClient.getRecentCommands().catch(() => null),
+    stacyClient.getAllCommands().catch(() => null),
+    stacyClient.getFolders().catch(() => null),
+    stacyClient.getNotes().catch(() => null)
+  ]);
 
-    const allEmpty = commands.length === 0 && allCommands.length === 0 && folders.length === 0 && notes.length === 0;
-    const hasPrevData = webViewProvider._ac.length > 0 || webViewProvider._folders.length > 0 || webViewProvider._notes.length > 0;
-
-    if (allEmpty && hasPrevData) {
-      console.log('[STACY] refreshAll: all data empty but provider has data, preserving current view');
-      return;
-    }
-
-    _folderCommandCache = {};
-    for (const f of folders) {
-      const fid = f.CAR_ID || f.id;
-      if (!fid) continue;
-      try {
-        const fData = await stacyClient.getFolderCommands(fid);
-        _folderCommandCache[fid] = parseData(fData, 'comandos');
-      } catch { _folderCommandCache[fid] = []; }
-    }
-
-    webViewProvider.update(commands, allCommands, folders, notes, _folderCommandCache, profileData, _currentUsername);
-  } catch (err) {
-    console.error('Refresh failed:', err);
+  const profileData = await stacyClient.getProfile().catch((err) => {
     if (err && err.message && err.message.includes('Unauthorized')) {
-      if (extensionContext) {
-        await stacyAuth.logout(extensionContext);
-      }
-      vscode.window.showErrorMessage('STACY session expired. Please login again.');
+      return { _expired: true };
     }
+    return null;
+  });
+
+  if (profileData && profileData._expired) {
+    console.log('[STACY] Token expired during refresh, logging out');
+    if (extensionContext) {
+      await stacyAuth.logout(extensionContext);
+      webViewProvider.update([], [], [], [], {}, null, '');
+    }
+    vscode.window.showErrorMessage('Sesión expirada. Inicia sesión de nuevo.');
+    return;
   }
+
+  const commands = parseData(cmdData, 'comandos');
+  const allCommands = parseData(allCmdData, 'comandos');
+  const folders = parseData(folderData, 'carpetas');
+  const notes = parseData(notesData, 'notas');
+
+  const allEmpty = commands.length === 0 && allCommands.length === 0 && folders.length === 0 && notes.length === 0;
+  const hasPrevData = webViewProvider._ac.length > 0 || webViewProvider._folders.length > 0 || webViewProvider._notes.length > 0;
+
+  if (allEmpty && hasPrevData) {
+    console.log('[STACY] refreshAll: all data empty but provider has data, preserving current view');
+    return;
+  }
+
+  _folderCommandCache = {};
+  for (const f of folders) {
+    const fid = f.CAR_ID || f.id;
+    if (!fid) continue;
+    try {
+      const fData = await stacyClient.getFolderCommands(fid);
+      _folderCommandCache[fid] = parseData(fData, 'comandos');
+    } catch { _folderCommandCache[fid] = []; }
+  }
+
+  webViewProvider.update(commands, allCommands, folders, notes, _folderCommandCache, profileData, _currentUsername);
 }
 
 function parseData(data, defaultKey) {
