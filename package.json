@@ -2,7 +2,7 @@
   "name": "stacy-extension",
   "displayName": "STACY",
   "description": "Sube y gestiona el historial de comandos de tu terminal desde VS Code. Compatible con Linux, macOS y Windows.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "publisher": "stacy",
   "license": "MIT",
   "icon": "images/icon.png",
