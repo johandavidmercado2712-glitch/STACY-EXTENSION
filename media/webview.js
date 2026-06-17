@@ -202,18 +202,28 @@ function switchOS(os){
   document.getElementById('pasosContent').innerHTML=c;
   var btn=document.getElementById('downloadScriptBtn');
   if(btn)btn.addEventListener('click',function(){downloadScript(os)});
+  var directBtn=document.getElementById('importWinDirectBtn');
+  if(directBtn)directBtn.addEventListener('click',importWinDirect);
+}
+function importWinDirect(){
+  var btn=document.getElementById('importWinDirectBtn');
+  if(btn){btn.disabled=true;btn.textContent='Importando...'}
+  vsc.postMessage({type:'importWindowsHistory'});
+  showToast('Leyendo historial de PowerShell...')
 }
 function pasosHTML(os){
   var esLinux=os==='linux';
   var sn=esLinux?'upload_history.sh':'upload_history.ps1';
   var paso2=esLinux?
     '<div class="paso-texto"><strong>Ejecutalo en tu terminal</strong><p>Abre una terminal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p><code class="paso-code">cd ~/Downloads && bash upload_history.sh</code><p class="paso-nota">Si lo guardaste en otra carpeta, usa <code>cd /ruta/donde/lo/guardaste</code></p><p class="paso-nota">Si es una maquina nueva, abre una terminal, ejecuta algunos comandos y <strong>cierrala</strong> para que se guarde el historial, luego ejecuta el script.</p></div>':
-    '<div class="paso-texto"><strong>Ejecutalo en PowerShell</strong><p>Abre <strong>PowerShell</strong> como usuario normal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p><code class="paso-code">cd ~\\\\Downloads && .\\\\upload_history.ps1</code><p class="paso-nota">Si es la primera vez, ejecuta antes: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></p><p class="paso-nota">Si es una maquina nueva, abre PowerShell, ejecuta algunos comandos y <strong>cierra la ventana</strong> para que se guarde el historial, luego ejecuta el script.</p></div>';
+    '<div class="paso-texto"><strong>Ejecutalo en PowerShell</strong><p>Abre <strong>PowerShell</strong> como usuario normal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p><code class="paso-code">cd ~\\Downloads && .\\upload_history.ps1</code><p class="paso-nota">Si es la primera vez, ejecuta antes: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></p><p class="paso-nota">Si es una maquina nueva, abre PowerShell, ejecuta algunos comandos y <strong>cierra la ventana</strong> para que se guarde el historial, luego ejecuta el script.</p></div>';
+  var directBtn=esLinux?'':'<button id="importWinDirectBtn" class="modal-btn" style="width:100%;margin-top:10px;background:#2d9c4a">Importar directamente (WSL)</button>';
   return '<div class="pasos-guide">'+
     '<div class="paso"><span class="paso-num">1</span><div class="paso-texto"><strong>Descarga el script</strong><p>Haz clic en el boton de abajo para descargar el archivo <code>'+sn+'</code> con tu token incluido.</p></div></div>'+
     '<div class="paso"><span class="paso-num">2</span>'+paso2+'</div>'+
     '<div class="paso"><span class="paso-num">3</span><div class="paso-texto"><strong>Actualiza la pagina</strong><p>Presiona <kbd>Ctrl+Shift+R</kbd> o haz clic en "Actualizar" y tus comandos apareceran con el nombre de tu maquina.</p></div></div>'+
   '</div>'+
+  directBtn+
   '<button id="downloadScriptBtn" class="modal-btn" style="width:100%;margin-top:10px">Descargar '+sn+'</button>';
 }
 function downloadScript(os){

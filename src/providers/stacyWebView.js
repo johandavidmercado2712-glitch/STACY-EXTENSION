@@ -781,7 +781,8 @@ class StacyWebViewProvider {
             const token = this._client._token || '';
             const isWin = msg.os === 'windows';
             const fn = isWin ? 'upload_history.ps1' : 'upload_history.sh';
-                        if (isWin) {
+            let content;
+            if (isWin) {
               content = 'Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force\n$API_URL = "' + apiUrl + '"\n$TOKEN = \'' + token + '\'\n$HOSTNAME = $env:COMPUTERNAME\n$histFile = "$env:USERPROFILE\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt"\nif (Test-Path $histFile) {\n  Write-Host "Leyendo historial..." -ForegroundColor Cyan\n  $lines = @(Get-Content $histFile | Where-Object { $_ -match "\\S" })\n  $total = $lines.Count\n  if ($total -eq 0) {\n    Write-Host "El historial esta vacio." -ForegroundColor Yellow\n  } else {\n    Write-Host "Encontrados $total comandos. Subiendo en lotes de 100..." -ForegroundColor Yellow\n    $comandos = @($lines | ForEach-Object { @{ comando = $_; directorio = "[MAQUINA:$HOSTNAME] $env:USERPROFILE" } })\n    $batchSize = 100\n    $importados = 0\n    for ($i = 0; $i -lt $comandos.Count; $i += $batchSize) {\n      $end = [Math]::Min($i + $batchSize - 1, $comandos.Count - 1)\n      $batch = @($comandos[$i..$end])\n      $body = @{ comandos = $batch } | ConvertTo-Json -Depth 10 -Compress\n      $loteNum = [Math]::Floor($i / $batchSize) + 1\n      $loteTotal = [Math]::Ceiling($total / $batchSize)\n      Write-Host "  Lote $loteNum de $loteTotal..." -ForegroundColor Cyan\n      try {\n        $r = Invoke-RestMethod -Uri "$API_URL/comandos/importar" -Method Post -Headers @{ Authorization = "Bearer $TOKEN" } -ContentType "application/json" -Body $body -TimeoutSec 120\n        $importados += $r.importados\n        Write-Host "  +$($r.importados) importados" -ForegroundColor Green\n      } catch {\n        Write-Host "  Error en lote: $_" -ForegroundColor Red\n      }\n    }\n    Write-Host "Listo! $importados comandos importados de $total." -ForegroundColor Green\n  }\n} else {\n  Write-Host "No se encontro el historial en $histFile" -ForegroundColor Red\n}\nWrite-Host "`nPresiona Enter para continuar..."; Read-Host\n';
             } else {
               content = '#!/bin/bash\nAPI_URL="' + apiUrl + '"\nTOKEN=\'' + token + '\'\nHOSTNAME=$(hostname 2>/dev/null || echo "unknown")\n\nif [ -f ~/.bash_history ] || [ -f ~/.zsh_history ]; then\n  for f in ~/.bash_history ~/.zsh_history; do\n    [ ! -f "$f" ] && continue\n    echo "Leyendo $f..."\n    lines=$(grep -v "^\\s*$" "$f" | tac 2>/dev/null || grep -v "^\\s*$" "$f")\n    total=$(echo "$lines" | wc -l)\n    echo "Encontrados $total comandos. Subiendo..."\n    json="{\\"comandos\\":["\n    first=true\n    while IFS= read -r line; do\n      [ -z "$line" ] && continue\n      $first && first=false || json="$json,"\n      esc=$(echo "$line" | sed \'s/"/\\\\"/g\' | sed ":a;N;$!ba;s/\\n/\\\\n/g")\n      json="$json{\\"comando\\":\\"$esc\\",\\"directorio\\":\\"[MAQUINA:$HOSTNAME] $HOME\\"}"\n    done <<< "$lines"\n    json="$json]}"\n    curl -s --max-time 120 -X POST "$API_URL/comandos/importar" \\\n      -H "Authorization: Bearer $TOKEN" \\\n      -H "Content-Type: application/json" \\\n      -d "$json"\n    echo -e "\\nListo! Comandos de $f importados."\n  done\nelse\n  echo "No se encontro historial en ~/.bash_history ni ~/.zsh_history"\nfi\n';
@@ -791,14 +792,32 @@ class StacyWebViewProvider {
             const fs = require('fs');
             const child_process = require('child_process');
             const home = os.homedir();
+            const isWSL = process.env.WSL_DISTRO_NAME ||
+              (fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft'));
             let outDir = home;
             if (isWin) {
-              try {
-                outDir = child_process.execSync(
-                  'powershell -Command "[Environment]::GetFolderPath(\'UserProfile\') + \'\\\\Downloads\'"',
-                  { encoding: 'utf8', timeout: 3000 }
-                ).trim();
-              } catch (e) {}
+              if (isWSL) {
+                try {
+                  const winUser = child_process.execSync('cmd.exe /c echo %USERNAME%', { encoding: 'utf8', timeout: 5000 }).trim();
+                  const winDl = '/mnt/c/Users/' + winUser + '/Downloads';
+                  if (fs.existsSync(winDl)) { outDir = winDl; }
+                } catch (e) {
+                  try {
+                    const users = fs.readdirSync('/mnt/c/Users/').filter(u => u !== 'Public' && u !== 'Default' && u !== 'All Users' && u !== 'Default User');
+                    for (const user of users) {
+                      const p = '/mnt/c/Users/' + user + '/Downloads';
+                      if (fs.existsSync(p)) { outDir = p; break; }
+                    }
+                  } catch (e2) { /* ignore */ }
+                }
+              } else {
+                try {
+                  outDir = child_process.execSync(
+                    'powershell -Command "[Environment]::GetFolderPath(\'UserProfile\') + \'\\\\Downloads\'"',
+                    { encoding: 'utf8', timeout: 3000 }
+                  ).trim();
+                } catch (e) { /* ignore */ }
+              }
             }
             if (outDir === home || !fs.existsSync(outDir)) {
               const candidates = isWin
@@ -817,16 +836,77 @@ class StacyWebViewProvider {
               'Ejecutar ahora'
             );
             if (open === 'Ejecutar ahora') {
-              const terminal = vscode.window.createTerminal('STACY Upload');
-              terminal.show();
               const safePath = outPath.replace(/\\/g, '/');
-              if (isWin) {
-                terminal.sendText('powershell -ExecutionPolicy Bypass -File "' + safePath + '"', true);
+              if (isWin && isWSL) {
+                const winPath = safePath.replace(/^\/mnt\/([a-z])\//, (_, l) => l.toUpperCase() + ':\\').replace(/\//g, '\\');
+                const term = vscode.window.createTerminal({ name: 'STACY Upload', shellPath: 'powershell.exe' });
+                term.show();
+                term.sendText('Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; & "' + winPath + '"', true);
+              } else if (isWin) {
+                const term = vscode.window.createTerminal('STACY Upload');
+                term.show();
+                term.sendText('powershell -ExecutionPolicy Bypass -File "' + safePath + '"', true);
               } else {
-                terminal.sendText('cd "' + outDir.replace(/\\/g, '/') + '" && bash ' + fn, true);
+                const term = vscode.window.createTerminal('STACY Upload');
+                term.show();
+                term.sendText('cd "' + outDir.replace(/\\/g, '/') + '" && bash ' + fn, true);
               }
             }
           } catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
+          break;
+
+        case 'importWindowsHistory':
+          try {
+            const fs = require('fs');
+            const child_process = require('child_process');
+            const isWSL = process.env.WSL_DISTRO_NAME ||
+              (fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft'));
+            if (!isWSL) {
+              vscode.window.showErrorMessage('Esta opcion solo funciona desde WSL (Windows Subsystem for Linux)');
+              break;
+            }
+            let winUser = '';
+            try {
+              winUser = child_process.execSync('cmd.exe /c echo %USERNAME%', { encoding: 'utf8', timeout: 5000 }).trim();
+            } catch (e) { /* ignore */ }
+            if (!winUser) {
+              try {
+                const users = fs.readdirSync('/mnt/c/Users/').filter(u => u !== 'Public' && u !== 'Default' && u !== 'All Users' && u !== 'Default User');
+                if (users.length > 0) winUser = users[0];
+              } catch (e2) { /* ignore */ }
+            }
+            if (!winUser) {
+              vscode.window.showErrorMessage('No se pudo detectar el usuario de Windows');
+              break;
+            }
+            const histPath = '/mnt/c/Users/' + winUser + '/AppData/Roaming/Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt';
+            if (!fs.existsSync(histPath)) {
+              vscode.window.showErrorMessage('No se encontro el historial de PowerShell en:\n' + histPath + '\n\nAbre PowerShell, ejecuta algunos comandos y cierrala para que se genere el archivo.');
+              break;
+            }
+            const raw = fs.readFileSync(histPath, 'utf8');
+            const lines = raw.split('\n').filter(l => l.trim());
+            if (lines.length === 0) {
+              vscode.window.showErrorMessage('El archivo de historial esta vacio');
+              break;
+            }
+            vscode.window.withProgress({
+              location: vscode.ProgressLocation.Notification,
+              title: 'Subiendo ' + lines.length + ' comandos...',
+              cancellable: false
+            }, async () => {
+              const coms = lines.map(l => ({ comando: l, directorio: '[MAQUINA:' + winUser + '-WIN] C:\\Users\\' + winUser }));
+              const batchSize = 100;
+              let imported = 0;
+              for (let i = 0; i < coms.length; i += batchSize) {
+                const batch = coms.slice(i, i + batchSize);
+                const r = await this._client.importCommands(batch);
+                imported += r.importados || batch.length;
+              }
+              vscode.window.showInformationMessage(imported + ' comandos importados desde PowerShell');
+              vscode.commands.executeCommand('stacy.refresh');
+            });
+          } catch (err) { vscode.window.showErrorMessage('Error al importar historial: ' + err.message); }
           break;
 
         case 'assignCommand':
