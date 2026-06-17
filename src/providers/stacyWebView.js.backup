@@ -1,9 +1,8 @@
-const vscode = require("vscode");
+const vscode = require('vscode');
 
 function getNonce() {
-  let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -11,128 +10,74 @@ function getNonce() {
 }
 
 function escHtml(t) {
-  return String(t || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function fmtDate(d) {
-  if (!d) return "";
-  const dt = new Date(
-    typeof d === "string" && d.includes(" ") ? d.replace(" ", "T") : d,
-  );
-  return isNaN(dt)
-    ? d
-    : dt.toLocaleString("es-CO", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+  if (!d) return '';
+  const dt = new Date(typeof d === 'string' && d.includes(' ') ? d.replace(' ', 'T') : d);
+  return isNaN(dt) ? d : dt.toLocaleString('es-CO', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 function shortDate(d) {
-  if (!d) return "";
-  const dt = new Date(
-    typeof d === "string" && d.includes(" ") ? d.replace(" ", "T") : d,
-  );
-  return isNaN(dt)
-    ? d
-    : dt.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  if (!d) return '';
+  const dt = new Date(typeof d === 'string' && d.includes(' ') ? d.replace(' ', 'T') : d);
+  return isNaN(dt) ? d : dt.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
-function cLabel(c) {
-  return (
-    c.comando ||
-    c.COM_NOMBRE ||
-    c.comando_ejecutado ||
-    c.command ||
-    c.text ||
-    c.nombre ||
-    c.name ||
-    c.cmd ||
-    "Unknown"
-  );
-}
-function cDate(c) {
-  return c.fecha || c.COM_FECHA || c.fecha_ejecucion || c.date || "";
-}
-function cDir(c) {
-  return c.ruta || c.COM_RUTA || c.directorio || c.directory || "";
-}
-function fName(f) {
-  return (
-    f.CAR_NOMBRE ||
-    f.nombre ||
-    f.name ||
-    f.nombre_carpeta ||
-    f.folder_name ||
-    f.title ||
-    "Unnamed"
-  );
-}
-function fId(f) {
-  return f.CAR_ID || f.id || f.car_id || 0;
-}
+function cLabel(c) { return c.comando || c.COM_NOMBRE || c.comando_ejecutado || c.command || c.text || c.nombre || c.name || c.cmd || 'Unknown'; }
+function cDate(c) { return c.fecha || c.COM_FECHA || c.fecha_ejecucion || c.date || ''; }
+function cDir(c) { return c.ruta || c.COM_RUTA || c.directorio || c.directory || ''; }
+function fName(f) { return f.CAR_NOMBRE || f.nombre || f.name || f.nombre_carpeta || f.folder_name || f.title || 'Unnamed'; }
+function fId(f) { return f.CAR_ID || f.id || f.car_id || 0; }
 
 // ============ SERVER-SIDE RENDERING HELPERS ============
 
 function cmdCard(c) {
-  const l = cLabel(c),
-    f = cDate(c),
-    d = cDir(c);
-  return `<div class="cmd-item" data-cmd="${escHtml(l).replace(/'/g, "&#39;")}">
-    <div class="cmd-top"><span class="cmd-maq">${d.match(/\[MAQUINA:(.*?)\]/) ? escHtml(d.match(/\[MAQUINA:(.*?)\]/)[1]) : "Servidor"}</span><span class="cmd-time">${f ? fmtDate(f) : ""}</span></div>
+  const l = cLabel(c), f = cDate(c), d = cDir(c);
+  return `<div class="cmd-item" data-cmd="${escHtml(l).replace(/'/g,"&#39;")}">
+    <div class="cmd-top"><span class="cmd-maq">${d.match(/\[MAQUINA:(.*?)\]/)?escHtml(d.match(/\[MAQUINA:(.*?)\]/)[1]):'Servidor'}</span><span class="cmd-time">${f?fmtDate(f):''}</span></div>
     <code class="cmd-code"><svg class="cmd-code-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>${escHtml(l)}</code>
-    <div class="cmd-path">${d ? escHtml(d.replace(/\[MAQUINA:.*?\]\s*/, "")) : ""}</div>
+    <div class="cmd-path">${d?escHtml(d.replace(/\[MAQUINA:.*?\]\s*/,'')):''}</div>
   </div>`;
 }
 
 function renderCmdItems(ac) {
   return !ac || !ac.length
     ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay comandos</div><div class="empty-desc">Importa tu historial de comandos usando el botón "Bajar comandos"</div></div></div>'
-    : ac.map(cmdCard).join("");
+    : ac.map(cmdCard).join('');
 }
 
 function renderRecentItems(rc) {
   return !rc || !rc.length
     ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay comandos recientes</div><div class="empty-desc">Los comandos que ejecutes aparecerán aquí automáticamente</div></div></div>'
-    : rc.slice(0, 11).map(cmdCard).join("");
+    : rc.slice(0, 11).map(cmdCard).join('');
 }
 
 function renderFolderItems(folders) {
   return !folders || !folders.length
     ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay carpetas</div><div class="empty-desc">Crea tu primera carpeta con el botón + para organizar comandos</div></div></div>'
-    : folders
-        .map(function (f) {
-          return `<div class="folder-item" data-fid="${fId(f)}" data-fname="${escHtml(fName(f))}">
+    : folders.map(function(f){
+        return `<div class="folder-item" data-fid="${fId(f)}" data-fname="${escHtml(fName(f))}">
           <div class="folder-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
             </svg>
           </div>
-          <div class="folder-info"><div class="folder-name">${escHtml(fName(f))}</div>${f.CAR_DESCRIPCION ? '<div class="folder-desc">' + escHtml(f.CAR_DESCRIPCION) + "</div>" : ""}</div>
+          <div class="folder-info"><div class="folder-name">${escHtml(fName(f))}</div>${f.CAR_DESCRIPCION?'<div class="folder-desc">'+escHtml(f.CAR_DESCRIPCION)+'</div>':''}</div>
           <svg class="folder-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>`;
-        })
-        .join("");
+      }).join('');
 }
 
 function renderNoteItems(notes) {
   return !notes || !notes.length
     ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="9" x2="10" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay notas</div><div class="empty-desc">Crea tu primera nota con el botón + para guardar información</div></div></div>'
-    : notes
-        .map(function (n) {
-          const title = n.NOT_TITULO || n.titulo || n.title || "Sin titulo";
-          const preview = (n.NOT_CONTENIDO || n.contenido || n.content || "")
-            .replace(/\n/g, " ")
-            .substring(0, 80);
-          const date = shortDate(
-            n.NOT_UPDATED_AT || n.updated_at || n.NOT_CREATED_AT || "",
-          );
-          return `<div class="note-item" data-nid="${n.NOT_ID || n.id || 0}" data-ntitle="${escHtml(title)}" data-ncontent="${escHtml(n.NOT_CONTENIDO || n.contenido || n.content || "")}">
+    : notes.map(function(n){
+        const title = n.NOT_TITULO||n.titulo||n.title||'Sin titulo';
+        const preview = (n.NOT_CONTENIDO||n.contenido||n.content||'').replace(/\n/g,' ').substring(0,80);
+        const date = shortDate(n.NOT_UPDATED_AT||n.updated_at||n.NOT_CREATED_AT||'');
+        return `<div class="note-item" data-nid="${n.NOT_ID||n.id||0}" data-ntitle="${escHtml(title)}" data-ncontent="${escHtml(n.NOT_CONTENIDO||n.contenido||n.content||'')}">
           <div class="note-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
@@ -143,27 +88,26 @@ function renderNoteItems(notes) {
             </svg>
           </div>
           <div class="note-info">
-            <div class="note-title">${escHtml(title)}</div>${preview ? '<div class="note-preview">' + escHtml(preview) + "</div>" : ""}
+            <div class="note-title">${escHtml(title)}</div>${preview?'<div class="note-preview">'+escHtml(preview)+'</div>':''}
           </div>
-          ${date ? '<div class="note-date">' + escHtml(date) + "</div>" : ""}
+          ${date?'<div class="note-date">'+escHtml(date)+'</div>':''}
         </div>`;
-        })
-        .join("");
+      }).join('');
 }
 
 function renderProfile(prof, username) {
-  const initial = (username || "?")[0].toUpperCase();
+  const initial = (username || '?')[0].toUpperCase();
   const p = prof || {};
   return `<div class="profile-header">
     <div class="profile-avatar-lg">${escHtml(initial)}</div>
     <div class="profile-info">
-      <span class="profile-username">${escHtml(p.username || username || "")}</span>
+      <span class="profile-username">${escHtml(p.username||username||'')}</span>
       <span class="profile-label-1">Perfil de usuario</span>
     </div>
   </div>
   <div class="profile-body">
-    ${p.apellidos ? '<div class="profile-field"><span class="profile-field-label">Apellidos</span><span class="profile-field-value">' + escHtml(p.apellidos) + "</span></div>" : ""}
-    ${p.correo ? '<div class="profile-field"><span class="profile-field-label">Correo</span><span class="profile-field-value">' + escHtml(p.correo) + "</span></div>" : ""}
+    ${p.apellidos?'<div class="profile-field"><span class="profile-field-label">Apellidos</span><span class="profile-field-value">'+escHtml(p.apellidos)+'</span></div>':''}
+    ${p.correo?'<div class="profile-field"><span class="profile-field-label">Correo</span><span class="profile-field-value">'+escHtml(p.correo)+'</span></div>':''}
     <div class="profile-divider"></div>
     <button class="profile-item" data-action="bajar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Bajar comandos de este equipo</button>
     <button class="profile-logout"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesion</button>
@@ -683,8 +627,8 @@ body.stacy-dark{--bg:#0b1120;--surface:#161b22;--surface-hover:#1c2333;--text:#e
     </div>
     <div class="modal-body">
       <div class="os-selector">
-        <button class="os-tab active" data-os="windows">Windows</button>
-        <button class="os-tab" data-os="linux">Linux / Mac</button>
+        <button class="os-tab active" data-os="linux">Linux / Mac</button>
+        <button class="os-tab" data-os="windows">Windows</button>
       </div>
       <div id="pasosContent"></div>
     </div>
@@ -733,574 +677,257 @@ class StacyWebViewProvider {
     this._fcc = {};
     this._notes = [];
     this._prof = null;
-    this._user = "";
-    this._loginErr = "";
+    this._user = '';
+    this._loginErr = '';
   }
 
-  setAuth(auth, ctx) {
-    this._auth = auth;
-    this._ctx = ctx;
-  }
+  setAuth(auth, ctx) { this._auth = auth; this._ctx = ctx; }
 
   resolveWebviewView(v) {
     this._view = v;
     this._ready = false;
-    v.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [this._uri],
-    };
-    const scriptPath = vscode.Uri.joinPath(this._uri, "media", "webview.js");
+    v.webview.options = { enableScripts: true, localResourceRoots: [this._uri] };
+    const scriptPath = vscode.Uri.joinPath(this._uri, 'media', 'webview.js');
     const scriptUri = v.webview.asWebviewUri(scriptPath);
     const nonce = getNonce();
     const content = getWebViewContent(scriptUri, nonce);
-    console.log(
-      "[STACY] resolveWebviewView: setting webview html length=" +
-        (typeof content === "string" ? content.length : 0) +
-        " scriptUri=" +
-        scriptUri,
-    );
+    console.log('[STACY] resolveWebviewView: setting webview html length=' + (typeof content === 'string' ? content.length : 0) + ' scriptUri=' + scriptUri);
     v.webview.html = content;
 
     v.webview.onDidReceiveMessage(async (msg) => {
-      console.log("[STACY] msg received type=" + (msg ? msg.type : "null"));
+      console.log('[STACY] msg received type=' + (msg?msg.type:'null'));
       if (!msg || !msg.type) return;
 
-      if (msg.type === "ready") {
+      if (msg.type === 'ready') {
         this._ready = true;
-        console.log(
-          '[STACY] webview ready, _update will be called, _user="' +
-            this._user +
-            '"',
-        );
+        console.log('[STACY] webview ready, _update will be called, _user="' + this._user + '"');
         this._update();
         return;
       }
 
       switch (msg.type) {
-        case "copy":
-          vscode.env.clipboard.writeText(msg.text);
+        case 'copy': vscode.env.clipboard.writeText(msg.text); break;
+        case 'refresh': vscode.commands.executeCommand('stacy.refresh'); break;
+        case 'logout':
+          this._user = '';
+          this._loginErr = '';
+          vscode.commands.executeCommand('stacy.logout');
           break;
-        case "refresh":
-          vscode.commands.executeCommand("stacy.refresh");
-          break;
-        case "logout":
-          this._user = "";
-          this._loginErr = "";
-          vscode.commands.executeCommand("stacy.logout");
-          break;
-        case "import":
-          vscode.commands.executeCommand("stacy.importCommand");
-          break;
-        case "googleLogin":
-          vscode.commands.executeCommand("stacy.googleLogin");
-          break;
+        case 'import': vscode.commands.executeCommand('stacy.importCommand'); break;
+        case 'googleLogin': vscode.commands.executeCommand('stacy.googleLogin'); break;
 
-        case "login":
-          console.log(
-            "[STACY] login msg received, _ready=" +
-              this._ready +
-              ' _user="' +
-              this._user +
-              '"',
-          );
+        case 'login':
+          console.log('[STACY] login msg received, _ready=' + this._ready + ' _user="' + this._user + '"');
           if (this._auth && this._ctx) {
             try {
               await this._auth.login(msg.username, msg.password, this._ctx);
               this._user = msg.username;
-              this._loginErr = "";
-              console.log(
-                "[STACY] login OK, calling _update, _ready=" +
-                  this._ready +
-                  ' _user="' +
-                  this._user +
-                  '"',
-              );
+              this._loginErr = '';
+              console.log('[STACY] login OK, calling _update, _ready=' + this._ready + ' _user="' + this._user + '"');
               // update webview state immediately and then refresh data
-              try {
-                this._update();
-              } catch (e) {
-                console.error("[STACY] _update after login failed", e);
-              }
-              console.log("[STACY] calling stacy.refresh");
-              vscode.commands.executeCommand("stacy.refresh");
+              try { this._update(); } catch (e) { console.error('[STACY] _update after login failed', e); }
+              console.log('[STACY] calling stacy.refresh');
+              vscode.commands.executeCommand('stacy.refresh');
             } catch (err) {
-              console.log("[STACY] login FAILED: " + err.message);
-              this._loginErr =
-                err.message === "Login failed"
-                  ? "Credenciales Incorrectas"
-                  : "Error al iniciar sesion: " + err.message;
+              console.log('[STACY] login FAILED: ' + err.message);
+              this._loginErr = err.message === 'Login failed' ? 'Credenciales Incorrectas' : 'Error al iniciar sesion: ' + err.message;
               this._update();
             }
           }
           break;
 
-        case "register":
+        case 'register':
           try {
-            await this._client.register(
-              msg.username,
-              msg.apellidos,
-              msg.correo,
-              msg.password,
-            );
-            this._loginErr = "";
+            await this._client.register(msg.username, msg.apellidos, msg.correo, msg.password);
+            this._loginErr = '';
             if (this._auth && this._ctx) {
               await this._auth.login(msg.username, msg.password, this._ctx);
               this._user = msg.username;
-              vscode.commands.executeCommand("stacy.refresh");
+              vscode.commands.executeCommand('stacy.refresh');
             }
           } catch (err) {
-            this._loginErr = "Error al registrar: " + err.message;
+            this._loginErr = 'Error al registrar: ' + err.message;
             this._update();
           }
           break;
 
-        case "createNote":
-          try {
-            await this._client.createNote(msg.title, msg.content);
-            vscode.commands.executeCommand("stacy.refresh");
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
-          }
+        case 'createNote':
+          try { await this._client.createNote(msg.title, msg.content); vscode.commands.executeCommand('stacy.refresh'); }
+          catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
-        case "updateNote":
+        case 'updateNote':
           try {
-            console.log(
-              "[STACY] updateNote id=" +
-                msg.id +
-                ' title="' +
-                msg.title +
-                '" content_length=' +
-                (msg.content || "").length,
-            );
+            console.log('[STACY] updateNote id=' + msg.id + ' title="' + msg.title + '" content_length=' + (msg.content||'').length);
             await this._client.updateNote(msg.id, msg.title, msg.content);
-            vscode.commands.executeCommand("stacy.refresh");
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
+            vscode.commands.executeCommand('stacy.refresh');
           }
+          catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
-        case "deleteNote":
-          try {
-            await this._client.deleteNote(msg.id);
-            vscode.commands.executeCommand("stacy.refresh");
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
-          }
+        case 'deleteNote':
+          try { await this._client.deleteNote(msg.id); vscode.commands.executeCommand('stacy.refresh'); }
+          catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
 
-        case "createFolder":
+        case 'createFolder':
           try {
             await this._client.createFolder(msg.name, msg.description);
-            vscode.commands.executeCommand("stacy.refresh");
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
-          }
+            vscode.commands.executeCommand('stacy.refresh');
+          } catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
 
-        case "downloadScript":
+        case 'downloadScript':
           try {
             const apiUrl = this._client.baseUrl;
-            const token = this._client._token || "";
-            const isWin = msg.os === "windows";
-            const fn = isWin ? "upload_history.ps1" : "upload_history.sh";
+            const token = this._client._token || '';
+            const isWin = msg.os === 'windows';
+            const fn = isWin ? 'upload_history.ps1' : 'upload_history.sh';
             let content;
             if (isWin) {
-              content = `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-\$ProgressPreference = "SilentlyContinue"
-\$ErrorActionPreference = "Continue"
-
-\$API_URL = "${apiUrl}"
-\$TOKEN = '${token}'
-\$HOSTNAME = \$env:COMPUTERNAME
-\$histFile = "\$env:USERPROFILE\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt"
-
-if (Test-Path \$histFile) {
-  \$allLines = @(Get-Content \$histFile -Encoding UTF8)
-  \$lines = @()
-  
-  foreach (\$line in \$allLines) {
-    \$trimmed = \$line.Trim()
-    if (\$trimmed -and \$trimmed.Length -gt 0 -and \$trimmed -notmatch "[\r\n]" -and \$trimmed.Length -lt 1000) {
-      \$lines += \$trimmed
-    }
-  }
-  
-  \$total = @(\$lines).Count
-  Write-Host "Encontrados \$total comandos validos (de \$(\$allLines.Count) en historial)"
-  
-  if (\$total -gt 0) {
-    Write-Host "Leyendo \$total comandos..." -ForegroundColor Green
-    \$importados = 0
-    \$idx = 0
-    \$batchNum = 0
-    \$rechazados = 0
-    
-    while (\$idx -lt \$total) {
-      \$batchNum++
-      \$end = [Math]::Min(\$idx + 100, \$total)
-      \$batchSize = \$end - \$idx
-      \$batch = @()
-      
-      for (\$j = \$idx; \$j -lt \$end; \$j++) {
-        \$cmd = \$lines[\$j]
-        \$cmd = \$cmd -replace '[\r\n]', ' '
-        \$batch += @{ 
-          comando = [string]\$cmd
-          directorio = "[MAQUINA:\$HOSTNAME] \$env:USERPROFILE"
-        }
-      }
-      
-      \$idx = \$end
-      Write-Host "Lote \$batchNum - Enviando \$batchSize comandos..."
-      
-      \$payload = @{ comandos = \$batch }
-      \$body = ConvertTo-Json -InputObject \$payload -Depth 3
-      
-      Write-Host "  JSON enviado (primeros 200 caracteres): \$(\$body.Substring(0, [Math]::Min(200, \$body.Length)))" -ForegroundColor DarkGray
-      
-      \$retryCount = 0
-      \$success = \$false
-      
-      while (\$retryCount -lt 2 -and -not \$success) {
-        \$retryCount++
-        try {
-          \$bodyBytes = [System.Text.Encoding]::UTF8.GetBytes(\$body)
-          \$resp = Invoke-RestMethod -Uri "\$API_URL/comandos/importar" \`
-            -Method Post \`
-            -Body \$bodyBytes \`
-            -ContentType "application/json; charset=utf-8" \`
-            -Headers @{ "Authorization" = "Bearer \$TOKEN" } \`
-            -TimeoutSec 60 \`
-            -UseBasicParsing
-          
-          Write-Host "  Respuesta: \$(\$resp | ConvertTo-Json)" -ForegroundColor Gray
-          
-          if (\$resp) {
-            \$count = 0
-            if (\$resp.importados -ne \$null) {
-              \$count = \$resp.importados
-            } elseif (\$resp.Count -is [int]) {
-              \$count = \$resp.Count
-            } elseif (\$resp -is [int]) {
-              \$count = \$resp
-            }
-            
-            if (\$count -gt 0) {
-              \$importados += \$count
-              Write-Host "  OK: +\$count (total: \$importados/\$total)" -ForegroundColor Green
-              \$success = \$true
+              content = 'Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force\n\n$API_URL = "' + apiUrl + '"\n$TOKEN = \'' + token + '\'\n$HOSTNAME = $env:COMPUTERNAME\n$histFile = "$env:USERPROFILE\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt"\n\nif (Test-Path $histFile) {\n  Write-Host "Leyendo historial..." -ForegroundColor Cyan\n  $lines = @(Get-Content $histFile | Where-Object { $_ -match "\\S" })\n  $total = $lines.Count\n  if ($total -eq 0) {\n    Write-Host "El historial esta vacio." -ForegroundColor Yellow\n  } else {\n    Write-Host "Encontrados $total comandos. Subiendo en lotes de 100..." -ForegroundColor Yellow\n    $comandos = @($lines | ForEach-Object { @{ comando = $_; directorio = "[MAQUINA:$HOSTNAME] $env:USERPROFILE" } })\n    $batchSize = 100\n    $importados = 0\n    for ($i = 0; $i -lt $comandos.Count; $i += $batchSize) {\n      $end = [Math]::Min($i + $batchSize - 1, $comandos.Count - 1)\n      $batch = @($comandos[$i..$end])\n      $body = @{ comandos = $batch } | ConvertTo-Json -Depth 10 -Compress\n      $loteNum = [Math]::Floor($i / $batchSize) + 1\n      $loteTotal = [Math]::Ceiling($total / $batchSize)\n      Write-Host "  Lote $loteNum de $loteTotal..." -ForegroundColor Cyan\n      try {\n        $tempFile = [System.IO.Path]::GetTempFileName()\n        Set-Content -Path $tempFile -Value $body -Encoding UTF8 -NoNewline\n        $result = curl.exe -s --max-time 30 -X POST "$API_URL/comandos/importar" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d "@$tempFile"\n        Remove-Item $tempFile -Force\n        $r = $result | ConvertFrom-Json\n        $importados += $r.importados\n        Write-Host "  +$($r.importados) importados" -ForegroundColor Green\n      } catch {\n        Write-Host "  Error en lote: $_" -ForegroundColor Red\n      }\n    }\n    Write-Host "Listo! $importados comandos importados de $total." -ForegroundColor Green\n  }\n} else {\n  Write-Host "No se encontro el historial en $histFile" -ForegroundColor Red\n}\nWrite-Host "`nPresiona Enter para continuar..."; Read-Host\n';
             } else {
-              \$rechazados += \$batchSize
-              Write-Host "  NOTA: No se importaron comandos (ya registrados en STACY)" -ForegroundColor Yellow
-              \$success = \$true
+              content = '#!/bin/bash\nAPI_URL="' + apiUrl + '"\nTOKEN=\'' + token + '\'\nHOSTNAME=$(hostname 2>/dev/null || echo "unknown")\n\nif [ -f ~/.bash_history ] || [ -f ~/.zsh_history ]; then\n  for f in ~/.bash_history ~/.zsh_history; do\n    [ ! -f "$f" ] && continue\n    echo "Leyendo $f..."\n    lines=$(grep -v "^\\s*$" "$f" | tac 2>/dev/null || grep -v "^\\s*$" "$f")\n    total=$(echo "$lines" | wc -l)\n    echo "Encontrados $total comandos. Subiendo..."\n    json="{\\"comandos\\":["\n    first=true\n    while IFS= read -r line; do\n      [ -z "$line" ] && continue\n      $first && first=false || json="$json,"\n      esc=$(echo "$line" | sed \'s/"/\\\\"/g\' | sed ":a;N;$!ba;s/\\n/\\\\n/g")\n      json="$json{\\"comando\\":\\"$esc\\",\\"directorio\\":\\"[MAQUINA:$HOSTNAME] $HOME\\"}"\n    done <<< "$lines"\n    json="$json]}"\n    curl -s --max-time 120 -X POST "$API_URL/comandos/importar" \\\n      -H "Authorization: Bearer $TOKEN" \\\n      -H "Content-Type: application/json" \\\n      -d "$json"\n    echo -e "\\nListo! Comandos de $f importados."\n  done\nelse\n  echo "No se encontro historial en ~/.bash_history ni ~/.zsh_history"\nfi\n';
             }
-          } else {
-            Write-Host "  ERROR: respuesta nula del servidor"
-            if (\$retryCount -eq 1) {
-              Write-Host "  Reintentando en 3 segundos..."
-              Start-Sleep -Seconds 3
-            }
-          }
-        }
-        catch {
-          \$errMsg = \$_.Exception.Message
-          if (\$retryCount -eq 1) {
-            Write-Host "  ERROR: \$errMsg"
-            Write-Host "  Reintentando en 3 segundos..."
-            Start-Sleep -Seconds 3
-          } else {
-            Write-Host "  FALLO FINAL: \$errMsg" -ForegroundColor Red
-          }
-        }
-      }
-    }
-    Write-Host "Completo: \$importados/\$total comandos importados (rechazados: \$rechazados)" -ForegroundColor Cyan
-  } else {
-    Write-Host "Historial vacio" -ForegroundColor Yellow
-  }
-} else {
-  Write-Host "Archivo no encontrado: \$histFile" -ForegroundColor Red
-}
-
-Read-Host "Presiona Enter para salir"
-`;
-            } else {
-              content =
-                '#!/bin/bash\nAPI_URL="' +
-                apiUrl +
-                "\"\nTOKEN='" +
-                token +
-                '\'\nHOSTNAME=$(hostname 2>/dev/null || echo "unknown")\n\nif [ -f ~/.bash_history ] || [ -f ~/.zsh_history ]; then\n  for f in ~/.bash_history ~/.zsh_history; do\n    [ ! -f "$f" ] && continue\n    echo "Leyendo $f..."\n    lines=$(grep -v "^\\s*$" "$f" | tac 2>/dev/null || grep -v "^\\s*$" "$f")\n    total=$(echo "$lines" | wc -l)\n    echo "Encontrados $total comandos. Subiendo..."\n    json="{\\"comandos\\":["\n    first=true\n    while IFS= read -r line; do\n      [ -z "$line" ] && continue\n      $first && first=false || json="$json,"\n      esc=$(echo "$line" | sed \'s/"/\\\\"/g\' | sed ":a;N;$!ba;s/\\n/\\\\n/g")\n      json="$json{\\"comando\\":\\"$esc\\",\\"directorio\\":\\"[MAQUINA:$HOSTNAME] $HOME\\"}"\n    done <<< "$lines"\n    json="$json]}"\n    curl -s --max-time 120 -X POST "$API_URL/comandos/importar" \\\n      -H "Authorization: Bearer $TOKEN" \\\n      -H "Content-Type: application/json" \\\n      -d "$json"\n    echo -e "\\nListo! Comandos de $f importados."\n  done\nelse\n  echo "No se encontro historial en ~/.bash_history ni ~/.zsh_history"\nfi\n';
-            }
-            const os = require("os");
-            const path = require("path");
-            const fs = require("fs");
-            const child_process = require("child_process");
+            const os = require('os');
+            const path = require('path');
+            const fs = require('fs');
+            const child_process = require('child_process');
             const home = os.homedir();
-            const isWSL =
-              process.env.WSL_DISTRO_NAME ||
-              (fs.existsSync("/proc/version") &&
-                fs
-                  .readFileSync("/proc/version", "utf8")
-                  .toLowerCase()
-                  .includes("microsoft"));
+            const isWSL = process.env.WSL_DISTRO_NAME ||
+              (fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft'));
             let outDir = home;
             if (isWin) {
               if (isWSL) {
                 try {
-                  const winUser = child_process
-                    .execSync("cmd.exe /c echo %USERNAME%", {
-                      encoding: "utf8",
-                      timeout: 5000,
-                    })
-                    .trim();
-                  const winDl = "/mnt/c/Users/" + winUser + "/Downloads";
-                  if (fs.existsSync(winDl)) {
-                    outDir = winDl;
-                  }
+                  const winUser = child_process.execSync('cmd.exe /c echo %USERNAME%', { encoding: 'utf8', timeout: 5000 }).trim();
+                  const winDl = '/mnt/c/Users/' + winUser + '/Downloads';
+                  if (fs.existsSync(winDl)) { outDir = winDl; }
                 } catch (e) {
                   try {
-                    const users = fs
-                      .readdirSync("/mnt/c/Users/")
-                      .filter(
-                        (u) =>
-                          u !== "Public" &&
-                          u !== "Default" &&
-                          u !== "All Users" &&
-                          u !== "Default User",
-                      );
+                    const users = fs.readdirSync('/mnt/c/Users/').filter(u => u !== 'Public' && u !== 'Default' && u !== 'All Users' && u !== 'Default User');
                     for (const user of users) {
-                      const p = "/mnt/c/Users/" + user + "/Downloads";
-                      if (fs.existsSync(p)) {
-                        outDir = p;
-                        break;
-                      }
+                      const p = '/mnt/c/Users/' + user + '/Downloads';
+                      if (fs.existsSync(p)) { outDir = p; break; }
                     }
-                  } catch (e2) {
-                    /* ignore */
-                  }
+                  } catch (e2) { /* ignore */ }
                 }
               } else {
                 try {
-                  outDir = child_process
-                    .execSync(
-                      "powershell -Command \"[Environment]::GetFolderPath('UserProfile') + '\\\\Downloads'\"",
-                      { encoding: "utf8", timeout: 3000 },
-                    )
-                    .trim();
-                } catch (e) {
-                  /* ignore */
-                }
+                  outDir = child_process.execSync(
+                    'powershell -Command "[Environment]::GetFolderPath(\'UserProfile\') + \'\\\\Downloads\'"',
+                    { encoding: 'utf8', timeout: 3000 }
+                  ).trim();
+                } catch (e) { /* ignore */ }
               }
             }
             if (outDir === home || !fs.existsSync(outDir)) {
               const candidates = isWin
-                ? [
-                    "Downloads",
-                    "Descargas",
-                    "Download",
-                    "Téléchargements",
-                    "下載",
-                    "Scaricati",
-                    "Heruntergeladene",
-                  ]
-                : ["Downloads", "Descargas", "Escritorio", "Desktop", ""];
+                ? ['Downloads', 'Descargas', 'Download', 'Téléchargements', '下載', 'Scaricati', 'Heruntergeladene']
+                : ['Downloads', 'Descargas', 'Escritorio', 'Desktop', ''];
               for (const c of candidates) {
                 const p = c ? path.join(home, c) : home;
-                if (fs.existsSync(p)) {
-                  outDir = p;
-                  break;
-                }
+                if (fs.existsSync(p)) { outDir = p; break; }
               }
             }
             const outPath = path.join(outDir, fn);
             fs.writeFileSync(outPath, content);
             if (!isWin) fs.chmodSync(outPath, 0o755);
             if (this._view) {
-              this._view.webview.postMessage({ type: "downloadComplete" });
+              this._view.webview.postMessage({ type: 'downloadComplete' });
             }
             const open = await vscode.window.showInformationMessage(
-              "Script guardado en: " + outPath,
-              "Ejecutar ahora",
+              'Script guardado en: ' + outPath,
+              'Ejecutar ahora'
             );
-            if (open === "Ejecutar ahora") {
-              const safePath = outPath.replace(/\\/g, "/");
+            if (open === 'Ejecutar ahora') {
+              const safePath = outPath.replace(/\\/g, '/');
               if (isWin && isWSL) {
-                const winPath = safePath
-                  .replace(
-                    /^\/mnt\/([a-z])\//,
-                    (_, l) => l.toUpperCase() + ":\\",
-                  )
-                  .replace(/\//g, "\\");
-                const term = vscode.window.createTerminal({
-                  name: "STACY Upload",
-                  shellPath: "powershell.exe",
-                });
+                const winPath = safePath.replace(/^\/mnt\/([a-z])\//, (_, l) => l.toUpperCase() + ':\\').replace(/\//g, '\\');
+                const term = vscode.window.createTerminal({ name: 'STACY Upload', shellPath: 'powershell.exe' });
                 term.show();
-                term.sendText(
-                  '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; & "' +
-                    winPath +
-                    '"',
-                  true,
-                );
+                term.sendText('Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; & "' + winPath + '"', true);
               } else if (isWin) {
-                const term = vscode.window.createTerminal("STACY Upload");
+                const term = vscode.window.createTerminal('STACY Upload');
                 term.show();
-                term.sendText(
-                  'powershell -ExecutionPolicy Bypass -File "' + safePath + '"',
-                  true,
-                );
+                term.sendText('powershell -ExecutionPolicy Bypass -File "' + safePath + '"', true);
               } else {
-                const term = vscode.window.createTerminal("STACY Upload");
+                const term = vscode.window.createTerminal('STACY Upload');
                 term.show();
-                term.sendText(
-                  'cd "' + outDir.replace(/\\/g, "/") + '" && bash ' + fn,
-                  true,
-                );
+                term.sendText('cd "' + outDir.replace(/\\/g, '/') + '" && bash ' + fn, true);
               }
             }
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
-          }
+          } catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
 
-        case "importWindowsHistory":
+        case 'importWindowsHistory':
           try {
-            const fs = require("fs");
-            const path = require("path");
-            const os = require("os");
-            const isWSL =
-              process.env.WSL_DISTRO_NAME ||
-              (fs.existsSync("/proc/version") &&
-                fs
-                  .readFileSync("/proc/version", "utf8")
-                  .toLowerCase()
-                  .includes("microsoft"));
+            const fs = require('fs');
+            const path = require('path');
+            const os = require('os');
+            const isWSL = process.env.WSL_DISTRO_NAME ||
+              (fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft'));
             let histPath;
             const homedir = os.homedir();
             if (isWSL) {
-              const child_process = require("child_process");
-              let winUser = "";
+              const child_process = require('child_process');
+              let winUser = '';
               try {
-                winUser = child_process
-                  .execSync("cmd.exe /c echo %USERNAME%", {
-                    encoding: "utf8",
-                    timeout: 5000,
-                  })
-                  .trim();
-              } catch (e) {
-                /* ignore */
-              }
+                winUser = child_process.execSync('cmd.exe /c echo %USERNAME%', { encoding: 'utf8', timeout: 5000 }).trim();
+              } catch (e) { /* ignore */ }
               if (!winUser) {
                 try {
-                  const users = fs
-                    .readdirSync("/mnt/c/Users/")
-                    .filter(
-                      (u) =>
-                        u !== "Public" &&
-                        u !== "Default" &&
-                        u !== "All Users" &&
-                        u !== "Default User",
-                    );
+                  const users = fs.readdirSync('/mnt/c/Users/').filter(u => u !== 'Public' && u !== 'Default' && u !== 'All Users' && u !== 'Default User');
                   if (users.length > 0) winUser = users[0];
-                } catch (e2) {
-                  /* ignore */
-                }
+                } catch (e2) { /* ignore */ }
               }
               if (!winUser) {
-                vscode.window.showErrorMessage(
-                  "No se pudo detectar el usuario de Windows",
-                );
+                vscode.window.showErrorMessage('No se pudo detectar el usuario de Windows');
                 break;
               }
-              histPath =
-                "/mnt/c/Users/" +
-                winUser +
-                "/AppData/Roaming/Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt";
+              histPath = '/mnt/c/Users/' + winUser + '/AppData/Roaming/Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt';
             } else {
-              histPath = path.join(
-                homedir,
-                "AppData",
-                "Roaming",
-                "Microsoft",
-                "Windows",
-                "PowerShell",
-                "PSReadLine",
-                "ConsoleHost_history.txt",
-              );
+              histPath = path.join(homedir, 'AppData', 'Roaming', 'Microsoft', 'Windows', 'PowerShell', 'PSReadLine', 'ConsoleHost_history.txt');
             }
             if (!fs.existsSync(histPath)) {
-              vscode.window.showErrorMessage(
-                "No se encontro el historial de PowerShell en:\n" +
-                  histPath +
-                  "\n\nAbre PowerShell, ejecuta algunos comandos y cierrala para que se genere el archivo.",
-              );
+              vscode.window.showErrorMessage('No se encontro el historial de PowerShell en:\n' + histPath + '\n\nAbre PowerShell, ejecuta algunos comandos y cierrala para que se genere el archivo.');
               break;
             }
-            const raw = fs.readFileSync(histPath, "utf8");
-            const lines = raw.split("\n").filter((l) => l.trim());
+            const raw = fs.readFileSync(histPath, 'utf8');
+            const lines = raw.split('\n').filter(l => l.trim());
             if (lines.length === 0) {
-              vscode.window.showErrorMessage(
-                "El archivo de historial esta vacio",
-              );
+              vscode.window.showErrorMessage('El archivo de historial esta vacio');
               break;
             }
-            const userName = isWSL
-              ? "RED5G"
-              : process.env.USERNAME || "Windows";
-            vscode.window.withProgress(
-              {
-                location: vscode.ProgressLocation.Notification,
-                title: "Subiendo " + lines.length + " comandos...",
-                cancellable: false,
-              },
-              async () => {
-                const coms = lines.map((l) => ({
-                  comando: l,
-                  directorio:
-                    "[MAQUINA:" + userName + "-WIN] C:\\Users\\" + userName,
-                }));
-                const batchSize = 100;
-                let imported = 0;
-                for (let i = 0; i < coms.length; i += batchSize) {
-                  const batch = coms.slice(i, i + batchSize);
-                  const r = await this._client.importCommands(batch);
-                  imported += r.importados || batch.length;
-                }
-                vscode.window.showInformationMessage(
-                  imported + " comandos importados desde PowerShell",
-                );
-                vscode.commands.executeCommand("stacy.refresh");
-              },
-            );
-          } catch (err) {
-            vscode.window.showErrorMessage(
-              "Error al importar historial: " + err.message,
-            );
-          }
+            const userName = isWSL ? 'RED5G' : (process.env.USERNAME || 'Windows');
+            vscode.window.withProgress({
+              location: vscode.ProgressLocation.Notification,
+              title: 'Subiendo ' + lines.length + ' comandos...',
+              cancellable: false
+            }, async () => {
+              const coms = lines.map(l => ({ comando: l, directorio: '[MAQUINA:' + userName + '-WIN] C:\\Users\\' + userName }));
+              const batchSize = 100;
+              let imported = 0;
+              for (let i = 0; i < coms.length; i += batchSize) {
+                const batch = coms.slice(i, i + batchSize);
+                const r = await this._client.importCommands(batch);
+                imported += r.importados || batch.length;
+              }
+              vscode.window.showInformationMessage(imported + ' comandos importados desde PowerShell');
+              vscode.commands.executeCommand('stacy.refresh');
+            });
+          } catch (err) { vscode.window.showErrorMessage('Error al importar historial: ' + err.message); }
           break;
 
-        case "assignCommand":
+        case 'assignCommand':
           try {
-            await this._client.assignCommandToFolder(
-              msg.comandoId,
-              msg.carpetaId,
-            );
-            vscode.commands.executeCommand("stacy.refresh");
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
-          }
+            await this._client.assignCommandToFolder(msg.comandoId, msg.carpetaId);
+            vscode.commands.executeCommand('stacy.refresh');
+          } catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
-        case "saveCommandDescription":
+        case 'saveCommandDescription':
           try {
-            await this._client.updateCommandDescription(
-              msg.carpetaId,
-              msg.comandoId,
-              msg.descripcion,
-            );
-            vscode.commands.executeCommand("stacy.refresh");
-          } catch (err) {
-            vscode.window.showErrorMessage("Error: " + err.message);
-          }
+            await this._client.updateCommandDescription(msg.carpetaId, msg.comandoId, msg.descripcion);
+            vscode.commands.executeCommand('stacy.refresh');
+          } catch (err) { vscode.window.showErrorMessage('Error: ' + err.message); }
           break;
       }
     });
@@ -1318,41 +945,22 @@ Read-Host "Presiona Enter para salir"
   }
 
   _update() {
-    if (!this._view) {
-      console.log("[STACY] _update skipped: no _view");
-      return;
-    }
-    if (!this._ready) {
-      console.log(
-        '[STACY] _update skipped: _ready=false, user="' +
-          (this._user || "") +
-          '"',
-      );
-      return;
-    }
+    if (!this._view) { console.log('[STACY] _update skipped: no _view'); return; }
+    if (!this._ready) { console.log('[STACY] _update skipped: _ready=false, user="' + (this._user||'') + '"'); return; }
     const loggedIn = !!this._user;
 
-    console.log(
-      "[STACY] _update called - ready=" +
-        this._ready +
-        " view=" +
-        !!this._view +
-        " loggedIn=" +
-        loggedIn +
-        " user=" +
-        (this._user || ""),
-    );
+    console.log('[STACY] _update called - ready=' + this._ready + ' view=' + !!this._view + ' loggedIn=' + loggedIn + ' user=' + (this._user||''));
 
     const payload = {
-      type: "setData",
+      type: 'setData',
       loggedIn,
       username: this._user,
-      initial: this._user ? this._user[0].toUpperCase() : "",
+      initial: this._user ? this._user[0].toUpperCase() : '',
       loginError: this._loginErr,
       allCmds: this._ac,
       fCmdCache: this._fcc,
       folders: this._folders,
-      notes: this._notes,
+      notes: this._notes
     };
 
     if (loggedIn) {
@@ -1360,16 +968,11 @@ Read-Host "Presiona Enter para salir"
         cmdItems: renderCmdItems(this._ac),
         folderItems: renderFolderItems(this._folders),
         noteItems: renderNoteItems(this._notes),
-        profilePanel: renderProfile(this._prof, this._user),
+        profilePanel: renderProfile(this._prof, this._user)
       };
     }
 
-    console.log(
-      "[STACY] _update posting setData loggedIn=" +
-        loggedIn +
-        " cmds=" +
-        (this._ac || []).length,
-    );
+    console.log('[STACY] _update posting setData loggedIn=' + loggedIn + ' cmds=' + (this._ac||[]).length);
     this._view.webview.postMessage(payload);
   }
 }

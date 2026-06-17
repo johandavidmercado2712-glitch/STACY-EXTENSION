@@ -18,6 +18,11 @@ initWebview();
 // ============ MESSAGE HANDLER ============
 window.addEventListener('message',function(e){
   var msg=e.data;
+  if(msg.type==='downloadComplete'){
+    var btn=document.getElementById('downloadScriptBtn');
+    if(btn){btn.disabled=false;btn.textContent=btn.getAttribute('data-orig')||'Descargar script'}
+    return
+  }
   if(msg.type!=='setData')return;
   _allCmds=msg.allCmds||[];
   _fCmds=msg.fCmdCache||{};
@@ -192,7 +197,7 @@ function doRefresh(){vsc.postMessage({type:'refresh'})}
 // ============ BAJAR MODAL ============
 function doBajarComandos(){
   var m=document.getElementById('bajarModal');
-  if(m){m.style.display='flex';switchOS('linux')}
+  if(m){m.style.display='flex';switchOS('windows')}
 }
 function closeBajarModal(){document.getElementById('bajarModal').style.display='none'}
 function switchOS(os){
@@ -216,19 +221,19 @@ function pasosHTML(os){
   var sn=esLinux?'upload_history.sh':'upload_history.ps1';
   var paso2=esLinux?
     '<div class="paso-texto"><strong>Ejecutalo en tu terminal</strong><p>Abre una terminal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p><code class="paso-code">cd ~/Downloads && bash upload_history.sh</code><p class="paso-nota">Si lo guardaste en otra carpeta, usa <code>cd /ruta/donde/lo/guardaste</code></p><p class="paso-nota">Si es una maquina nueva, abre una terminal, ejecuta algunos comandos y <strong>cierrala</strong> para que se guarde el historial, luego ejecuta el script.</p></div>':
-    '<div class="paso-texto"><strong>Ejecutalo en PowerShell</strong><p>Abre <strong>PowerShell</strong> como usuario normal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p><code class="paso-code">cd ~\\Downloads && .\\upload_history.ps1</code><p class="paso-nota">Si es la primera vez, ejecuta antes: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></p><p class="paso-nota">Si es una maquina nueva, abre PowerShell, ejecuta algunos comandos y <strong>cierra la ventana</strong> para que se guarde el historial, luego ejecuta el script.</p></div>';
-  var directBtn=esLinux?'':'<button id="importWinDirectBtn" class="modal-btn" style="width:100%;margin-top:10px;background:#2d9c4a">Importar directamente (WSL)</button>';
+    '<div class="paso-texto"><strong>Ejecutalo en PowerShell</strong><p>Abre <strong>PowerShell</strong> como usuario normal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p><code class="paso-code">cd ~\\Downloads && .\\upload_history.ps1</code><p class="paso-nota">Si es la primera vez, ejecuta antes: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></p><p class="paso-nota">Si es una maquina nueva, abre PowerShell, ejecuta algunos comandos y <strong>cierra la ventana</strong> para que se guarde el historial, luego ejecuta el script.</p><p class="paso-nota"><strong>¿Usas WSL?</strong> Si ejecutas VS Code desde WSL (Windows Subsystem for Linux), puedes usar el boton <strong>"Importar directamente"</strong> de abajo para leer el historial de PowerShell de Windows sin descargar el script.</p></div>';
+  var directBtn=esLinux?'':'<button id="importWinDirectBtn" class="modal-btn" style="width:100%;margin-top:10px">Importar directamente</button>';
   return '<div class="pasos-guide">'+
     '<div class="paso"><span class="paso-num">1</span><div class="paso-texto"><strong>Descarga el script</strong><p>Haz clic en el boton de abajo para descargar el archivo <code>'+sn+'</code> con tu token incluido.</p></div></div>'+
     '<div class="paso"><span class="paso-num">2</span>'+paso2+'</div>'+
     '<div class="paso"><span class="paso-num">3</span><div class="paso-texto"><strong>Actualiza la pagina</strong><p>Presiona <kbd>Ctrl+Shift+R</kbd> o haz clic en "Actualizar" y tus comandos apareceran con el nombre de tu maquina.</p></div></div>'+
   '</div>'+
-  directBtn+
-  '<button id="downloadScriptBtn" class="modal-btn" style="width:100%;margin-top:10px">Descargar '+sn+'</button>';
+  '<button id="downloadScriptBtn" class="modal-btn" style="width:100%;margin-top:10px">Descargar '+sn+'</button>'+
+  directBtn;
 }
 function downloadScript(os){
   var btn=document.getElementById('downloadScriptBtn');
-  if(btn){btn.disabled=true;btn.textContent='Descargando...'}
+  if(btn){btn.setAttribute('data-orig',btn.textContent);btn.disabled=true;btn.textContent='Descargando...'}
   vsc.postMessage({type:'downloadScript',os:os});
   showToast('Guardando script en Descargas...')
 }
