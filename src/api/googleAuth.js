@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 class GoogleAuth {
   async login(context) {
-    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '') || '362542735955-8osds4f8vtofg6uohejgtkjgoqh27tio.apps.googleusercontent.com';
+    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '') || '362542735955-r5c00q0rvhlrl8vv8fr0faocfsq3svuu.apps.googleusercontent.com';
 
     const codeVerifier = this._genVerifier();
     const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
