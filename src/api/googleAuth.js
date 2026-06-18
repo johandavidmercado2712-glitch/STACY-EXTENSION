@@ -4,11 +4,7 @@ const crypto = require('crypto');
 
 class GoogleAuth {
   async login(context) {
-    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '');
-    if (!clientId) {
-      vscode.window.showErrorMessage('Configura "stacy.googleClientId" en settings para usar Google Login');
-      return null;
-    }
+    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '') || '362542735955-8osds4f8vtofg6uohejgtkjgoqh27tio.apps.googleusercontent.com';
 
     const codeVerifier = this._genVerifier();
     const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
@@ -85,13 +81,15 @@ class GoogleAuth {
   }
 
   _findPort(start) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const s = require('net').createServer();
       s.listen(start, () => {
         resolve(s.address().port);
         s.close();
       });
-      s.on('error', () => resolve(this._findPort(start + 1)));
+      s.on('error', () => {
+        reject(new Error('Google login necesita el puerto ' + start + ' para el servidor local. Cierra otras apps o cambia "stacy.googleClientId" en settings.'));
+      });
     });
   }
 
