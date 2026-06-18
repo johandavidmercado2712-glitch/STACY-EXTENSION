@@ -4,13 +4,13 @@ const crypto = require('crypto');
 
 class GoogleAuth {
   async login(context) {
-    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '') || '362542735955-r5c00q0rvhlrl8vv8fr0faocfsq3svuu.apps.googleusercontent.com';
+    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '') || '362542735955-8osds4f8vtofg6uohejgtkjgoqh27tio.apps.googleusercontent.com';
 
     const codeVerifier = this._genVerifier();
     const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
 
     const port = await this._findPort(54321);
-    const redirectUri = `http://localhost:${port}/callback`;
+    const redirectUri = `http://localhost:${port}`;
 
     const { server, codePromise } = this._createServer(port);
 
@@ -81,15 +81,13 @@ class GoogleAuth {
   }
 
   _findPort(start) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const s = require('net').createServer();
       s.listen(start, () => {
         resolve(s.address().port);
         s.close();
       });
-      s.on('error', () => {
-        reject(new Error('Google login necesita el puerto ' + start + ' para el servidor local. Cierra otras apps o cambia "stacy.googleClientId" en settings.'));
-      });
+      s.on('error', () => resolve(this._findPort(start + 1)));
     });
   }
 
