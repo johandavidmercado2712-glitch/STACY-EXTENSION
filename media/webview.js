@@ -180,6 +180,7 @@ document.getElementById('cmdList').addEventListener('click',function(e){
 document.getElementById('folderCmdList').addEventListener('click',function(e){
   var item=e.target.closest('.cmd-item');
   if(!item)return;
+  if(e.target.closest('.cmd-action-btn'))return;
   var idx=parseInt(item.dataset.cidx);
   if(!isNaN(idx))openDetailModal(idx);
 });
