@@ -6,7 +6,7 @@ class StacyClient {
   }
 
   get baseUrl() {
-    return vscode.workspace.getConfiguration('stacy').get('serverUrl', 'http://stacyprogram.online');
+    return vscode.workspace.getConfiguration('stacy').get('serverUrl', 'https://stacyprogram.online');
   }
 
   setToken(token) {

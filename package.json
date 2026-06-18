@@ -77,7 +77,7 @@
       "properties": {
         "stacy.serverUrl": {
           "type": "string",
-          "default": "http://stacyprogram.online",
+          "default": "https://stacyprogram.online",
           "description": "STACY backend server URL"
         },
         "stacy.maxCommands": {
