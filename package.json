@@ -87,7 +87,7 @@
         },
         "stacy.googleClientId": {
           "type": "string",
-          "default": "362542735955-r5c00q0rvhlrl8vv8fr0faocfsq3svuu.apps.googleusercontent.com",
+          "default": "362542735955-8osds4f8vtofg6uohejgtkjgoqh27tio.apps.googleusercontent.com",
           "description": "Google OAuth Client ID (para iniciar sesión con Google)"
         }
       }
