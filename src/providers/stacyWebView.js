@@ -154,8 +154,13 @@ function renderNoteItems(notes) {
 function renderProfile(prof, username) {
   const initial = (username || "?")[0].toUpperCase();
   const p = prof || {};
+  const avatarUrl = p.picture || p.avatar || p.foto_perfil || p.foto || null;
+  const avatarHtml = avatarUrl 
+    ? `<img src="${escHtml(avatarUrl)}" class="profile-avatar-lg" style="object-fit: cover; background: transparent; padding: 0; box-shadow: 0 0 0 2px var(--accent-dim), 0 0 20px rgba(245,158,11,0.3);" alt="Avatar">`
+    : `<div class="profile-avatar-lg">${escHtml(initial)}</div>`;
+  
   return `<div class="profile-header">
-    <div class="profile-avatar-lg">${escHtml(initial)}</div>
+    ${avatarHtml}
     <div class="profile-info">
       <span class="profile-username">${escHtml(p.username || username || "")}</span>
       <span class="profile-label-1">Perfil de usuario</span>
@@ -1024,12 +1029,40 @@ if (Test-Path \$histFile) {
 Read-Host "Presiona Enter para salir"
 `;
             } else {
-              content =
-                '#!/bin/bash\nAPI_URL="' +
-                apiUrl +
-                "\"\nTOKEN='" +
-                token +
-                '\'\nHOSTNAME=$(hostname 2>/dev/null || echo "unknown")\n\nif [ -f ~/.bash_history ] || [ -f ~/.zsh_history ]; then\n  for f in ~/.bash_history ~/.zsh_history; do\n    [ ! -f "$f" ] && continue\n    echo "Leyendo $f..."\n    lines=$(grep -v "^\\s*$" "$f" | tac 2>/dev/null || grep -v "^\\s*$" "$f")\n    total=$(echo "$lines" | wc -l)\n    echo "Encontrados $total comandos. Subiendo..."\n    json="{\\"comandos\\":["\n    first=true\n    while IFS= read -r line; do\n      [ -z "$line" ] && continue\n      $first && first=false || json="$json,"\n      esc=$(echo "$line" | sed \'s/"/\\\\"/g\' | sed ":a;N;$!ba;s/\\n/\\\\n/g")\n      json="$json{\\"comando\\":\\"$esc\\",\\"directorio\\":\\"[MAQUINA:$HOSTNAME] $HOME\\"}"\n    done <<< "$lines"\n    json="$json]}"\n    curl -s --max-time 120 -X POST "$API_URL/comandos/importar" \\\n      -H "Authorization: Bearer $TOKEN" \\\n      -H "Content-Type: application/json" \\\n      -d "$json"\n    echo -e "\\nListo! Comandos de $f importados."\n  done\nelse\n  echo "No se encontro historial en ~/.bash_history ni ~/.zsh_history"\nfi\n';
+              content = `#!/bin/bash
+API_URL="${apiUrl}"
+TOKEN='${token}'
+HOSTNAME=$(hostname 2>/dev/null || echo "unknown")
+
+python3 -c '
+import sys, json, os, urllib.request
+api_url, token, hostname = sys.argv[1:4]
+home = os.path.expanduser("~")
+cmds = []
+for f in [".bash_history", ".zsh_history"]:
+    path = os.path.join(home, f)
+    if os.path.exists(path):
+        print(f"Leyendo {path}...")
+        with open(path, "rb") as file:
+            for line in file:
+                line = line.decode("utf-8", "ignore").strip()
+                if line:
+                    cmds.append({"comando": line, "directorio": f"[MAQUINA:{hostname}] {home}"})
+if not cmds:
+    print("No se encontro historial vacio.")
+    sys.exit(0)
+cmds.reverse()
+print(f"Encontrados {len(cmds)} comandos. Subiendo...")
+data = json.dumps({"comandos": cmds}).encode("utf-8")
+req = urllib.request.Request(api_url + "/comandos/importar", data=data)
+req.add_header("Authorization", "Bearer " + token)
+req.add_header("Content-Type", "application/json")
+try:
+    with urllib.request.urlopen(req, timeout=120) as response:
+        print("Listo! Comandos importados.")
+except Exception as e:
+    print(f"Error subiendo comandos: {e}")
+' "$API_URL" "$TOKEN" "$HOSTNAME"`;
             }
             const os = require("os");
             const path = require("path");
@@ -1353,6 +1386,7 @@ Read-Host "Presiona Enter para salir"
       fCmdCache: this._fcc,
       folders: this._folders,
       notes: this._notes,
+      avatarUrl: this._prof ? (this._prof.picture || this._prof.avatar || this._prof.foto_perfil || this._prof.foto) : null,
     };
 
     if (loggedIn) {

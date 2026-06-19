@@ -1,41 +1,23 @@
 const vscode = require('vscode');
 const http = require('http');
-const crypto = require('crypto');
 
 class GoogleAuth {
   async login(context) {
-    const clientId = vscode.workspace.getConfiguration('stacy').get('googleClientId', '') || '362542735955-8osds4f8vtofg6uohejgtkjgoqh27tio.apps.googleusercontent.com';
-
-    const codeVerifier = this._genVerifier();
-    const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
-
     const port = await this._findPort(54321);
-    const redirectUri = `http://localhost:${port}`;
 
-    const { server, codePromise } = this._createServer(port);
+    const { server, authPromise } = this._createServer(port);
 
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid profile email',
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-      access_type: 'offline',
-      prompt: 'select_account'
-    });
-
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const authUrl = `https://stacyprogram.online/auth/google/login?port=${port}`;
     await vscode.env.openExternal(vscode.Uri.parse(authUrl));
 
-    const code = await vscode.window.withProgress({
+    const result = await vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: 'Google Login',
       cancellable: true
     }, async (progress, token) => {
       progress.report({ message: 'Esperando autenticación en el navegador...' });
       return Promise.race([
-        codePromise,
+        authPromise,
         new Promise((_, reject) => {
           token.onCancellationRequested(() => {
             server.close();
@@ -46,38 +28,7 @@ class GoogleAuth {
     });
 
     server.close();
-
-    const serverUrl = vscode.workspace.getConfiguration('stacy').get('serverUrl', '');
-    const exchangeUrl = `${serverUrl}/auth/google/exchange`;
-
-    vscode.window.showInformationMessage('Intercambiando token con STACY...');
-
-    const resp = await fetch(exchangeUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code,
-        client_id: clientId,
-        code_verifier: codeVerifier,
-        redirect_uri: redirectUri
-      })
-    });
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(`Error en backend Google auth: ${resp.status} ${errText}`);
-    }
-
-    const data = await resp.json();
-    if (!data.access_token) {
-      throw new Error('No se recibió access_token del backend');
-    }
-
-    return data;
-  }
-
-  _genVerifier() {
-    return crypto.randomBytes(32).toString('base64url');
+    return result;
   }
 
   _findPort(start) {
@@ -92,29 +43,54 @@ class GoogleAuth {
   }
 
   _createServer(port) {
-    let resolveCode;
-    const codePromise = new Promise((res, rej) => {
-      resolveCode = res;
-      setTimeout(() => rej(new Error('Timeout esperando callback de Google')), 120000);
+    let resolveAuth;
+    const authPromise = new Promise((res, rej) => {
+      resolveAuth = res;
+      setTimeout(() => rej(new Error('Timeout esperando autenticación')), 120000);
     });
 
     const server = http.createServer((req, res) => {
       try {
-        const url = new URL(req.url, `http://localhost:${port}`);
+        const url = new URL(req.url, `http://127.0.0.1:${port}`);
+        const token = url.searchParams.get('token');
+        const user = url.searchParams.get('user');
         const error = url.searchParams.get('error');
+
         if (error) {
-          res.writeHead(400, { 'Content-Type': 'text/html' });
+          res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
           res.end(`<html><body><h2>Error</h2><p>${error}</p></body></html>`);
           return;
         }
-        const code = url.searchParams.get('code');
-        if (code) {
-          res.writeHead(200, { 'Content-Type': 'text/html' });
-          res.end(`<html><body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;background:#0d1117;color:#e6edf3;text-align:center"><div><h2 style="color:#f59e0b">✓ Autenticación exitosa</h2><p>Ya puedes cerrar esta ventana y volver a VS Code.</p></div></body></html>`);
-          resolveCode(code);
+
+        if (token && user) {
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STACY - Autenticación</title>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #07080c; color: #e6edf3; text-align: center; }
+    .card { background: #0e1017; padding: 3rem 4rem; border-radius: 18px; border: 1px solid #1e2030; }
+    .icon { font-size: 3rem; color: #f59e0b; }
+    h2 { margin: 0 0 0.5rem; font-size: 1.8rem; color: #f59e0b; }
+    p { margin: 0; color: #8b949e; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✓</div>
+    <h2>Autenticación exitosa</h2>
+    <p>Has iniciado sesión como <b style="color:#e6edf3">${user}</b>.</p>
+    <p style="margin-top:0.5rem;font-size:0.9rem;opacity:0.7;">Ya puedes cerrar esta pestaña y volver a VS Code.</p>
+  </div>
+</body>
+</html>`);
+          resolveAuth({ access_token: token, username: user });
         } else {
           res.writeHead(400);
-          res.end('No authorization code received');
+          res.end('Error: No se recibió token de autenticación');
         }
       } catch (e) {
         console.error('[GoogleAuth] server error:', e);
@@ -122,7 +98,7 @@ class GoogleAuth {
     });
 
     server.listen(port);
-    return { server, codePromise };
+    return { server, authPromise };
   }
 }
 

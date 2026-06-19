@@ -43,7 +43,16 @@ window.addEventListener('message',function(e){
       var ul=document.querySelector('.user-label-1');
       if(ul)ul.textContent=msg.username;
       var ua=document.querySelector('.user-avatar');
-      if(ua)ua.textContent=msg.initial||msg.username[0];
+      if(ua){
+        if(msg.avatarUrl){
+          ua.innerHTML='<img src="'+msg.avatarUrl+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+          ua.style.background='transparent';
+        } else {
+          ua.innerHTML='';
+          ua.textContent=msg.initial||msg.username[0];
+          ua.style.background='var(--accent)';
+        }
+      }
     }
     var t=document.querySelectorAll('.tab');
     if(t.length>=3){
