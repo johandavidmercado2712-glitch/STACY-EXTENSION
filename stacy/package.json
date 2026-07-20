@@ -1,0 +1,63 @@
+{
+  "name": "stacy",
+  "displayName": "STACY",
+  "description": "gestor de comandos ",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.120.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "stacy.configureBackend",
+        "title": "STACY: Configurar Servidor Backend"
+      },
+      {
+        "command": "stacy.login",
+        "title": "STACY: Iniciar Sesión"
+      },
+      {
+        "command": "stacy.syncHistory",
+        "title": "STACY: Sincronizar Historial"
+      }
+    ],
+    "configuration": {
+      "title": "STACY Configuration",
+      "properties": {
+        "stacy.backendUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8000",
+          "description": "URL del servidor API de STACY"
+        },
+        "stacy.autoSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sincronizar el historial de comandos automáticamente en segundo plano"
+        },
+        "stacy.syncInterval": {
+          "type": "number",
+          "default": 5,
+          "description": "Intervalo en minutos para la sincronización automática de comandos"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.120.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "eslint": "^9.39.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
