@@ -7,7 +7,14 @@ class GoogleAuth {
 
     const { server, authPromise } = this._createServer(port);
 
-    const authUrl = `https://stacyprogram.online/auth/google/login?port=${port}`;
+    // Mismo origen que usa el resto de la API: si el usuario tiene configurado
+    // un servidor distinto (o "www"), el callback de Google lo rechazaria con
+    // redirect_uri_mismatch.
+    const serverUrl = vscode.workspace
+      .getConfiguration('stacy')
+      .get('serverUrl', 'https://stacyprogram.online');
+    const base = String(serverUrl || 'https://stacyprogram.online').replace(/\/+$/, '');
+    const authUrl = `${base}/auth/google/login?port=${port}`;
     await vscode.env.openExternal(vscode.Uri.parse(authUrl));
 
     const result = await vscode.window.withProgress({
@@ -54,6 +61,7 @@ class GoogleAuth {
         const url = new URL(req.url, `http://127.0.0.1:${port}`);
         const token = url.searchParams.get('token');
         const user = url.searchParams.get('user');
+        const picture = url.searchParams.get('picture');
         const error = url.searchParams.get('error');
 
         if (error) {
@@ -87,7 +95,7 @@ class GoogleAuth {
   </div>
 </body>
 </html>`);
-          resolveAuth({ access_token: token, username: user });
+          resolveAuth({ access_token: token, username: user, picture });
         } else {
           res.writeHead(400);
           res.end('Error: No se recibió token de autenticación');

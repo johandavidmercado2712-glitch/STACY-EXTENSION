@@ -2,6 +2,7 @@ const vscode = require('vscode');
 
 const STORAGE_KEY = 'stacy.accessToken';
 const USER_KEY = 'stacy.username';
+const PICTURE_KEY = 'stacy.picture';
 
 class StacyAuth {
   constructor(client) {
@@ -15,11 +16,16 @@ class StacyAuth {
     return this._loggedIn;
   }
 
+  get pictureUrl() {
+    return this._pictureUrl || '';
+  }
+
   async initialize(context) {
     const token = await context.secrets.get(STORAGE_KEY);
     if (token) {
       this._client.setToken(token);
       this._username = await context.secrets.get(USER_KEY) || '';
+      this._pictureUrl = await context.secrets.get(PICTURE_KEY) || '';
       try {
         await this._client.getProfile();
         this._loggedIn = true;
@@ -27,9 +33,11 @@ class StacyAuth {
         console.error('[STACY] stored token invalid, clearing auth:', err);
         this._client.clearToken();
         this._username = '';
+        this._pictureUrl = '';
         this._loggedIn = false;
         await context.secrets.delete(STORAGE_KEY);
         await context.secrets.delete(USER_KEY);
+        await context.secrets.delete(PICTURE_KEY);
       }
     }
   }
@@ -43,26 +51,37 @@ class StacyAuth {
     this._client.setToken(token);
     this._loggedIn = true;
     this._username = username;
+    this._pictureUrl = '';
     await context.secrets.store(STORAGE_KEY, token);
     await context.secrets.store(USER_KEY, username);
+    await context.secrets.delete(PICTURE_KEY);
     this._onDidChangeLoginStatus.fire(true);
     return token;
   }
 
-  async loginWithToken(token, username, context) {
+  async loginWithToken(token, username, context, picture) {
     this._client.setToken(token);
     this._loggedIn = true;
     this._username = username;
+    this._pictureUrl = picture || '';
     await context.secrets.store(STORAGE_KEY, token);
     await context.secrets.store(USER_KEY, username);
+    if (picture) {
+      await context.secrets.store(PICTURE_KEY, picture);
+    } else {
+      await context.secrets.delete(PICTURE_KEY);
+    }
     this._onDidChangeLoginStatus.fire(true);
   }
 
   async logout(context) {
     this._client.clearToken();
     this._loggedIn = false;
+    this._username = '';
+    this._pictureUrl = '';
     await context.secrets.delete(STORAGE_KEY);
     await context.secrets.delete(USER_KEY);
+    await context.secrets.delete(PICTURE_KEY);
     this._onDidChangeLoginStatus.fire(false);
   }
 

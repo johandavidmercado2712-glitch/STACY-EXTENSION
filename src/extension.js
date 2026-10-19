@@ -174,7 +174,8 @@ function activate(context) {
           return;
         }
         const username = result.username || result.email || 'google_user';
-        await stacyAuth.loginWithToken(result.access_token, username, context);
+        const picture = result.picture || '';
+        await stacyAuth.loginWithToken(result.access_token, username, context, picture);
         _currentUsername = username;
         vscode.window.showInformationMessage('Google Login exitoso');
         refreshAll();

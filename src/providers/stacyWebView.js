@@ -181,7 +181,7 @@ function getWebViewContent(scriptUri, nonce) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src https: data:;">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#07080c;--surface:#0e1017;--surface-hover:#161822;--text:#e6edf3;--text-secondary:#8b949e;--accent:#f59e0b;--accent-hover:#fbbf24;--accent-dim:rgba(245,158,11,0.12);--accent-glow:rgba(245,158,11,0.08);--border:#1e2030;--border-focus:#f59e0b;--danger:#f85149;--success:#3fb950;--radius:14px;--radius-sm:10px;--radius-lg:18px;--transition:200ms cubic-bezier(0.4,0,0.2,1);--shadow:0 4px 24px rgba(0,0,0,0.35);--shadow-lg:0 12px 48px rgba(0,0,0,0.45);--shadow-accent:0 8px 32px rgba(245,158,11,0.1);--font:'SF Pro Display','Inter','Segoe UI',system-ui,-apple-system,sans-serif;--font-mono:'SF Mono','JetBrains Mono','Fira Code','Consolas',monospace}
@@ -918,6 +918,40 @@ class StacyWebViewProvider {
 \$HOSTNAME = \$env:COMPUTERNAME
 \$histFile = "\$env:USERPROFILE\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt"
 
+# Invoke-RestMethod no sigue los 308 y al seguirlos puede perder la cabecera
+# Authorization (el backend respondia 308 y luego "No autenticado").
+function Invoke-StacyPost {
+  param(\$Uri, \$BodyBytes, \$MaxRedirections = 5)
+  \$actual = \$Uri
+  \$intentos = 0
+  while (\$true) {
+    \$err = \$null
+    \$resp = \$null
+    try {
+      \$resp = Invoke-WebRequest -Uri \$actual -Method Post -Body \$BodyBytes \`
+        -ContentType "application/json; charset=utf-8" \`
+        -Headers @{ "Authorization" = "Bearer \$TOKEN" } \`
+        -TimeoutSec 60 -UseBasicParsing -MaximumRedirection 0 -ErrorAction Stop
+      return (\$resp.Content | ConvertFrom-Json)
+    } catch {
+      \$err = \$_
+      \$status = \$null
+      \$destino = \$null
+      if (\$_.Exception.Response) {
+        try { \$status = [int]\$_.Exception.Response.StatusCode } catch { }
+        try { \$destino = \$_.Exception.Response.Headers["Location"] } catch { }
+      }
+      if (\$status -and \$destino -and (\$status -eq 301 -or \$status -eq 302 -or \$status -eq 303 -or \$status -eq 307 -or \$status -eq 308) -and \$intentos -lt \$MaxRedirections) {
+        Write-Host "  Redirigiendo (\$status) a \$destino..." -ForegroundColor DarkGray
+        \$actual = [System.Uri]::new([System.Uri]\$actual, \$destino).AbsoluteUri
+        \$intentos++
+        continue
+      }
+      throw \$err
+    }
+  }
+}
+
 if (Test-Path \$histFile) {
   \$allLines = @(Get-Content \$histFile -Encoding UTF8)
   \$lines = @()
@@ -969,13 +1003,7 @@ if (Test-Path \$histFile) {
         \$retryCount++
         try {
           \$bodyBytes = [System.Text.Encoding]::UTF8.GetBytes(\$body)
-          \$resp = Invoke-RestMethod -Uri "\$API_URL/comandos/importar" \`
-            -Method Post \`
-            -Body \$bodyBytes \`
-            -ContentType "application/json; charset=utf-8" \`
-            -Headers @{ "Authorization" = "Bearer \$TOKEN" } \`
-            -TimeoutSec 60 \`
-            -UseBasicParsing
+          \$resp = Invoke-StacyPost -Uri "\$API_URL/comandos/importar" -BodyBytes \$bodyBytes
           
           Write-Host "  Respuesta: \$(\$resp | ConvertTo-Json)" -ForegroundColor Gray
           
@@ -1035,7 +1063,7 @@ TOKEN='${token}'
 HOSTNAME=$(hostname 2>/dev/null || echo "unknown")
 
 python3 -c '
-import sys, json, os, urllib.request
+import sys, json, os, urllib.request, urllib.error, urllib.parse
 api_url, token, hostname = sys.argv[1:4]
 home = os.path.expanduser("~")
 cmds = []
@@ -1054,12 +1082,26 @@ if not cmds:
 cmds.reverse()
 print(f"Encontrados {len(cmds)} comandos. Subiendo...")
 data = json.dumps({"comandos": cmds}).encode("utf-8")
-req = urllib.request.Request(api_url + "/comandos/importar", data=data)
-req.add_header("Authorization", "Bearer " + token)
-req.add_header("Content-Type", "application/json")
+
+# Se sigue la redireccion a mano: urllib NO sigue los 308 y el servidor
+# respondia "HTTP Error 308: Permanent Redirect" al subir el historial.
+def enviar(url, intentos=0):
+    req = urllib.request.Request(url, data=data)
+    req.add_header("Authorization", "Bearer " + token)
+    req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=120) as response:
+            return response.status
+    except urllib.error.HTTPError as e:
+        destino = e.headers.get("Location")
+        if e.code in (301, 302, 303, 307, 308) and destino and intentos < 5:
+            print(f"Redirigiendo ({e.code}) a {destino}...")
+            return enviar(urllib.parse.urljoin(url, destino), intentos + 1)
+        raise
+
 try:
-    with urllib.request.urlopen(req, timeout=120) as response:
-        print("Listo! Comandos importados.")
+    enviar(api_url + "/comandos/importar")
+    print("Listo! Comandos importados.")
 except Exception as e:
     print(f"Error subiendo comandos: {e}")
 ' "$API_URL" "$TOKEN" "$HOSTNAME"`;
@@ -1386,7 +1428,7 @@ except Exception as e:
       fCmdCache: this._fcc,
       folders: this._folders,
       notes: this._notes,
-      avatarUrl: this._prof ? (this._prof.picture || this._prof.avatar || this._prof.foto_perfil || this._prof.foto) : null,
+      avatarUrl: (this._prof ? (this._prof.picture || this._prof.avatar || this._prof.foto_perfil || this._prof.foto) : null) || (this._auth ? this._auth.pictureUrl : null),
     };
 
     if (loggedIn) {
@@ -1394,7 +1436,7 @@ except Exception as e:
         cmdItems: renderCmdItems(this._ac),
         folderItems: renderFolderItems(this._folders),
         noteItems: renderNoteItems(this._notes),
-        profilePanel: renderProfile(this._prof, this._user),
+        profilePanel: renderProfile({ ...(this._prof || {}), picture: this._prof?.picture || this._auth?.pictureUrl }, this._user),
       };
     }
 
