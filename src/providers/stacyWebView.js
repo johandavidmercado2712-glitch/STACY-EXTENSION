@@ -317,23 +317,25 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 .toolbar{display:flex;flex-direction:column;gap:6px;margin:8px 0}
 .toolbar-row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
-.toolbar .search-bar{flex:1;min-width:0}
-.toolbar .search-bar input{width:100%;padding:7px 10px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
-.toolbar .search-bar input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
+.toolbar .search-bar{flex:1;min-width:0;position:relative;display:flex;align-items:center}
+.toolbar .search-bar .search-icon{position:absolute;left:10px;color:var(--text-secondary);opacity:0.5;pointer-events:none;width:14px;height:14px}
+.toolbar .search-bar input{width:100%;padding:7px 32px 7px 32px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
+.toolbar .search-bar input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim);background:color-mix(in srgb,var(--amber) 6%,var(--surface))}
+.toolbar .search-bar .clear-btn{position:absolute;right:6px;display:none;align-items:center;justify-content:center;width:20px;height:20px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;border-radius:4px;font-size:14px;line-height:1;padding:0}
+.toolbar .search-bar .clear-btn:hover{color:var(--amber);background:var(--surface-hover)}
+.toolbar .search-bar.has-value .clear-btn{display:flex}
 .folder-filter-bar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:color-mix(in srgb,var(--amber) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--amber) 20%,var(--border));border-radius:8px;margin:6px 0;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .folder-filter-bar:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim);background:color-mix(in srgb,var(--amber) 12%,var(--surface))}
 .folder-filter-bar svg{flex-shrink:0;color:var(--text-secondary);opacity:0.6}
 .folder-filter-bar input{flex:1;min-width:0;border:none;background:none;font-size:12px;font-family:inherit;color:var(--text);outline:none}
 .folder-filter-bar input::placeholder{color:var(--text-secondary);opacity:0.6}
 .machine-select-wrap{position:relative;display:flex;align-items:center;flex-shrink:0}
-.machine-select-icon{position:absolute;left:8px;color:var(--text-secondary);opacity:0.5;pointer-events:none;flex-shrink:0;width:14px;height:14px;z-index:1}
-.machine-select-icon:hover{opacity:0.8}
-.machine-select{font-size:12px;padding:6px 8px 6px 28px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;cursor:pointer;flex-shrink:1;min-width:0;max-width:130px;transition:border-color var(--transition);appearance:auto;-webkit-appearance:auto}
+.machine-select{font-size:12px;padding:6px 10px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;cursor:pointer;flex:1;min-width:0;max-width:150px;transition:border-color var(--transition),background-color var(--transition)}
 .machine-select:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
 .view-toggle{display:flex;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--border);border-radius:10px;flex-shrink:0}
-.view-btn{font-size:11px;padding:4px 10px;border:none;background:transparent;color:var(--text-secondary);border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap}
+.view-btn{font-size:11px;padding:5px 12px;border:none;background:transparent;color:var(--text-secondary);border-radius:7px;cursor:pointer;font-weight:700;font-family:inherit;transition:background-color var(--transition),color var(--transition);white-space:nowrap;flex:1}
 .view-btn:hover{color:var(--text)}
-.view-btn.active{background:var(--bg);color:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.view-btn.active{background:var(--amber-dim);color:var(--amber)}
 .toolbar-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap;flex-shrink:0}
 .toolbar-btn:hover{background:var(--surface-hover);border-color:var(--text-secondary)}
 .toolbar-btn:active{transform:scale(0.97)}
@@ -447,6 +449,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .modal-input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
 .modal-textarea{width:100%;min-height:120px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;resize:vertical;transition:background-color var(--transition),color var(--transition),border-color var(--transition);box-sizing:border-box;margin-top:6px;line-height:1.5}
 .modal-textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
+.note-format-bar{display:flex;gap:4px;margin:8px 0 4px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+.fmt-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;font-size:11px;font-weight:600;border:none;background:transparent;color:var(--text-secondary);border-radius:6px;cursor:pointer;font-family:inherit;transition:background-color var(--transition),color var(--transition)}
+.fmt-btn:hover{background:var(--surface-hover);color:var(--text)}
+.fmt-btn:active{transform:scale(0.97)}
+.note-view-content h4{font-size:13px;font-weight:700;color:var(--amber);margin:10px 0 4px}
+.note-view-content ul{margin:4px 0 8px;padding-left:18px}
+.note-view-content li{margin:3px 0;font-size:13px;color:var(--text);line-height:1.5}
+.note-view-content .task-item{list-style:none;margin-left:-18px;display:flex;align-items:flex-start;gap:6px}
+.note-view-content .task-check{margin-top:2px;accent-color:var(--amber)}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--border);background:color-mix(in srgb, var(--bg) 60%, transparent)}
 .modal-btn{padding:7px 16px;font-size:12px;font-weight:700;font-family:inherit;border:none;background:var(--amber);color:var(--amber-ink);border-radius:9px;cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);letter-spacing:0.01em;box-shadow:0 2px 8px var(--amber-line)}
 .modal-btn:hover{background:var(--amber-bright)}
@@ -639,10 +650,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   <!-- COMMANDS -->
   <div class="panel active" id="panel-commands">
     <div class="toolbar">
-      <div class="search-bar"><input type="text" id="cmdSearch" placeholder="Filtrar comandos..." aria-label="Filtrar comandos"></div>
+      <div class="search-bar"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="cmdSearch" placeholder="Filtrar comandos..." aria-label="Filtrar comandos"><button class="clear-btn" type="button" aria-label="Limpiar filtro">&times;</button></div>
       <div class="toolbar-row">
         <div class="machine-select-wrap">
-          <svg class="machine-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
           <select class="machine-select" id="machineFilter" aria-label="Filtrar por máquina">
             <option value="">Todas las máquinas</option>
           </select>
@@ -709,7 +719,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
       <!-- EDIT MODE -->
       <div id="noteEditMode" style="display:none">
         <input type="text" class="modal-input" id="noteTitle" placeholder="Título de la nota">
-        <textarea class="modal-textarea" id="noteContent" placeholder="Escribe tu nota aquí..." style="min-height:140px"></textarea>
+        <div class="note-format-bar" role="toolbar" aria-label="Formato">
+          <button type="button" class="fmt-btn" data-fmt="heading" title="Título"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h16"/></svg> Título</button>
+          <button type="button" class="fmt-btn" data-fmt="list" title="Lista"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg> Lista</button>
+          <button type="button" class="fmt-btn" data-fmt="task" title="Lista de tareas"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 12l3 3 7-7"/></svg> Tareas</button>
+        </div>
+        <textarea class="modal-textarea" id="noteContent" placeholder="Escribe tu nota aquí..." style="min-height:180px"></textarea>
       </div>
     </div>
     <div class="modal-footer" id="noteViewFooter">

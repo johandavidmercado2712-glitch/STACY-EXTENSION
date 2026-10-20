@@ -172,6 +172,24 @@ document.getElementById('noteCancelBtn').addEventListener('click',closeNoteModal
 document.getElementById('noteCancelEditBtn').addEventListener('click',closeNoteModal);
 document.getElementById('noteEditBtn').addEventListener('click',editNote);
 document.getElementById('noteSaveBtn').addEventListener('click',saveNote);
+document.querySelectorAll('.fmt-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var ta=document.getElementById('noteContent');
+    var fmt=btn.getAttribute('data-fmt');
+    var marker=fmt==='heading'?'## ':fmt==='list'?'- ':'- [ ] ';
+    var start=ta.selectionStart, end=ta.selectionEnd;
+    var val=ta.value;
+    var before=val.substring(0,start);
+    var sel=val.substring(start,end);
+    var after=val.substring(end);
+    var prefix=(before.length===0||before.endsWith('\n'))?'': '\n';
+    var inserted=prefix+marker+sel;
+    ta.value=before+inserted+after;
+    var pos=start+inserted.length;
+    ta.selectionStart=ta.selectionEnd=pos;
+    ta.focus();
+  });
+});
 document.getElementById('noteDelBtn').addEventListener('click',deleteNote);
 document.getElementById('closeDetailBtn').addEventListener('click',closeDetailModal);
 document.getElementById('detailCloseBtn').addEventListener('click',closeDetailModal);
@@ -286,8 +304,10 @@ function setView(v){
 }
 document.getElementById('machineFilter').addEventListener('change',updatePanelTitle);
 var _srchTimer;
-function onSearch(){clearTimeout(_srchTimer);_srchTimer=setTimeout(renderCmds,200)}
+function onSearch(){clearTimeout(_srchTimer);_srchTimer=setTimeout(renderCmds,200);var inp=document.getElementById('cmdSearch');var bar=inp.parentElement;if(inp.value.trim())bar.classList.add('has-value');else bar.classList.remove('has-value')}
 document.getElementById('cmdSearch').addEventListener('input',onSearch);
+var _clearBtn=document.querySelector('.search-bar .clear-btn');
+if(_clearBtn)_clearBtn.addEventListener('click',function(){var inp=document.getElementById('cmdSearch');inp.value='';inp.parentElement.classList.remove('has-value');renderCmds();inp.focus()});
 document.getElementById('folderCmdSearch').addEventListener('input',onFolderCmdSearch);
 
 function renderCmds(){
@@ -320,8 +340,8 @@ function rebuildMachineFilter(){
   var cur=sel.value;
   var machines={};
   _allCmds.forEach(function(c){var d=c.ruta||c.COM_RUTA||'',m=(d.match(/\[MAQUINA:(.*?)\]/)||[])[1]||'Servidor';machines[m]=(machines[m]||0)+1});
-  var opts='<option value="">🔧 Todas las maquinas</option>';
-  Object.keys(machines).sort().forEach(function(m){opts+='<option value="'+escHtml(m)+'">💻 '+escHtml(m)+' ('+machines[m]+')</option>'});
+  var opts='<option value="">Todas las máquinas</option>';
+  Object.keys(machines).sort().forEach(function(m){opts+='<option value="'+escHtml(m)+'">'+escHtml(m)+' ('+machines[m]+')</option>'});
   sel.innerHTML=opts;
   if(cur)sel.value=cur;
 }
@@ -485,8 +505,7 @@ function openNote(id,title,content){
   document.getElementById('noteId').value=id;
   document.getElementById('noteTitle').value=title;
   document.getElementById('noteContent').value=content;
-  document.getElementById('noteViewTitle').textContent=title||'Sin titulo';
-  document.getElementById('noteViewContent').textContent=content||'Sin contenido';
+  renderNoteView(title,content);
   if(id){
     document.getElementById('noteViewMode').style.display='';
     document.getElementById('noteEditMode').style.display='none';
@@ -501,6 +520,54 @@ function openNote(id,title,content){
   }
   document.getElementById('noteModal').style.display='flex';
   if(!id)setTimeout(function(){document.getElementById('noteTitle').focus()},100);
+}
+function renderNoteView(title,content){
+  document.getElementById('noteViewTitle').textContent=title||'Sin título';
+  var el=document.getElementById('noteViewContent');
+  el.innerHTML=renderNoteContent(content||'Sin contenido');
+  // checkbox toggles
+  el.querySelectorAll('.task-check').forEach(function(cb){
+    cb.addEventListener('change',function(){
+      var lines=(document.getElementById('noteContent').value||'').split('\n');
+      // rebuild from DOM is complex; instead update raw text line by line using data-idx
+      var idx=parseInt(cb.getAttribute('data-idx'));
+      if(!isNaN(idx)&&lines[idx]){
+        lines[idx]=lines[idx].replace(/\[ \]/,'[x]').replace(/\[x\]/i, cb.checked?'[x]':'[ ]');
+        // simpler: set marker based on checked
+        lines[idx]=lines[idx].replace(/- \[[ xX]\]/, '- ['+(cb.checked?'x':' ')+']');
+        document.getElementById('noteContent').value=lines.join('\n');
+        var id=parseInt(document.getElementById('noteId').value)||0;
+        if(id)vsc.postMessage({type:'updateNote',id:id,title:document.getElementById('noteTitle').value,content:lines.join('\n')});
+      }
+    });
+  });
+}
+function renderNoteContent(text){
+  if(!text)return '<p style="color:var(--text-secondary);font-style:italic">Sin contenido</p>';
+  var lines=text.split('\n');
+  var html='';
+  var inList=false;
+  lines.forEach(function(line,i){
+    var t=line.trim();
+    if(!t){ if(inList){html+='</ul>';inList=false;} return; }
+    if(/^##\s+/.test(t)){ if(inList){html+='</ul>';inList=false;} html+='<h4>'+escHtml(t.replace(/^##\s+/,''))+'</h4>'; return;}
+    if(/^-\s\[\s\]\s|^-\s\[x\]\s/i.test(t)){
+      if(!inList){html+='<ul>';inList=true;}
+      var checked=/^-\s\[x\]/i.test(t);
+      var label=t.replace(/^-\s\[[ xX]\]\s*/,'');
+      html+='<li class="task-item"><input type="checkbox" class="task-check" data-idx="'+i+'" '+(checked?'checked':'')+'><span>'+escHtml(label)+'</span></li>';
+      return;
+    }
+    if(/^-\s+/.test(t)){
+      if(!inList){html+='<ul>';inList=true;}
+      html+='<li>'+escHtml(t.replace(/^-\s+/,''))+'</li>';
+      return;
+    }
+    if(inList){html+='</ul>';inList=false;}
+    html+='<p>'+escHtml(t)+'</p>';
+  });
+  if(inList)html+='</ul>';
+  return html;
 }
 function closeNoteModal(){
   document.getElementById('noteModal').style.display='none';
