@@ -549,7 +549,7 @@ function renderNoteContent(text){
     var t=line.trim();
     if(!t){ if(inList){html+='</ul>';inList=false;} return; }
     if(/^##\s+/.test(t)){ if(inList){html+='</ul>';inList=false;} html+='<h4>'+escHtml(t.replace(/^##\s+/,''))+'</h4>'; return;}
-    if(/^-\s\[\s\]\s|^-\s\[x\]\s/i.test(t)){
+    if(/^-\s\[[ xX]\]/.test(t)){
       if(!inList){html+='<ul>';inList=true;}
       var checked=/^-\s\[x\]/i.test(t);
       var label=t.replace(/^-\s\[[ xX]\]\s*/,'');
