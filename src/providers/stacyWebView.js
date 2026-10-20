@@ -92,7 +92,7 @@ function cmdCard(c) {
 
 function renderCmdItems(ac) {
   return !ac || !ac.length
-    ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay comandos</div><div class="empty-desc">Importa tu historial de comandos usando el botón "Bajar comandos"</div></div></div>'
+    ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div class="empty-content"><div class="empty-title">Sin comandos todavia</div><div class="empty-desc">Baja el historial de tu terminal en un clic</div><button class="empty-btn" data-action="bajar">Bajar comandos</button></div></div>'
     : ac.map(cmdCard).join("");
 }
 
@@ -104,7 +104,7 @@ function renderRecentItems(rc) {
 
 function renderFolderItems(folders) {
   return !folders || !folders.length
-    ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay carpetas</div><div class="empty-desc">Crea tu primera carpeta con el botón + para organizar comandos</div></div></div>'
+    ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-content"><div class="empty-title">Sin carpetas</div><div class="empty-desc">Agrupa tus comandos por proyecto o flujo</div><button class="empty-btn" data-action="nueva-carpeta">Nueva carpeta</button></div></div>'
     : folders
         .map(function (f) {
           return `<div class="folder-item" data-fid="${fId(f)}" data-fname="${escHtml(fName(f))}">
@@ -122,7 +122,7 @@ function renderFolderItems(folders) {
 
 function renderNoteItems(notes) {
   return !notes || !notes.length
-    ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="9" x2="10" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div><div class="empty-content"><div class="empty-title">Aún no hay notas</div><div class="empty-desc">Crea tu primera nota con el botón + para guardar información</div></div></div>'
+    ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="9" x2="10" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div><div class="empty-content"><div class="empty-title">Sin notas</div><div class="empty-desc">Guarda credenciales, URLs o recordatorios</div><button class="empty-btn" data-action="nueva-nota">Nueva nota</button></div></div>'
     : notes
         .map(function (n) {
           const title = n.NOT_TITULO || n.titulo || n.title || "Sin titulo";
@@ -192,7 +192,7 @@ function getWebViewContent(scriptUri, nonce) {
   --amber:#ff9602;--amber-bright:#ffb340;--amber-dim:rgba(255,150,2,0.14);--amber-line:rgba(255,150,2,0.32);--amber-ink:#241704;
   --danger:#f85149;--success:#3fb950;
   --radius:12px;--radius-sm:10px;--radius-lg:12px;
-  --dur:180ms;--ease:cubic-bezier(0.16,1,0.3,1);--transition:var(--dur) var(--ease);
+  --dur:180ms;--ease:cubic-bezier(0.16,1,0.3,1);--ease-out:cubic-bezier(0.23,1,0.32,1);--transition:var(--dur) var(--ease);
   --font:var(--vscode-font-family,'SF Pro Display','Inter','Segoe UI',system-ui,-apple-system,sans-serif);
   --font-mono:var(--vscode-editor-font-family,'SF Mono','JetBrains Mono','Fira Code','Consolas',monospace);
   /* modo auto (default): hereda el tema de VS Code */
@@ -231,13 +231,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 #loginView{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;background:var(--bg)}
 .auth-bg{display:none}
 .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:90%;max-width:360px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative;z-index:1}
-.auth-card-header{background:transparent;padding:24px 24px 16px;text-align:center;border-bottom:1px solid var(--border)}
-.auth-logo{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;background:var(--amber);color:var(--amber-ink);margin-bottom:8px;box-shadow:0 4px 16px var(--amber-line)}
-.auth-logo svg{width:24px;height:24px}
-.auth-card-header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-0.03em}
-.auth-tagline{margin:2px 0 0;font-size:12px;color:var(--text-secondary);font-weight:500;letter-spacing:0.01em}
+.auth-card-header{background:transparent;padding:16px 24px 12px;text-align:center;border-bottom:1px solid var(--border)}
+.auth-brand{display:flex;align-items:center;justify-content:center;gap:10px}
+.auth-logo{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:var(--amber);color:var(--amber-ink)}
+.auth-logo svg{width:18px;height:18px}
+.auth-card-header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:-0.02em}
 .auth-tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg);border-radius:var(--radius-sm);padding:4px}
-.auth-tab{background:transparent;color:var(--text-secondary);border:none;padding:6px 10px;font-size:12px;border-radius:8px;cursor:pointer;font-weight:600;flex:1;transition:all var(--transition);font-family:inherit}
+.auth-tab{background:transparent;color:var(--text-secondary);border:none;padding:6px 10px;font-size:12px;border-radius:8px;cursor:pointer;font-weight:600;flex:1;transition:background-color var(--transition),color var(--transition),border-color var(--transition);font-family:inherit}
 .auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.25)}
 .auth-body{padding:16px 20px 20px}
 .auth-form{display:flex;flex-direction:column;gap:10px}
@@ -247,14 +247,14 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .input-group input{width:100%;padding:8px 10px 8px 32px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);outline:none;transition:border-color var(--transition),box-shadow var(--transition)}
 .input-group input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
 .input-group input::placeholder{color:var(--text-secondary);opacity:0.5}
-.auth-form button{padding:8px;font-size:13px;font-weight:700;border:none;background:var(--amber);color:var(--amber-ink);border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;transition:all var(--transition);letter-spacing:0.01em}
-.auth-form button:hover{background:var(--amber-bright);box-shadow:0 4px 16px var(--amber-line);transform:translateY(-1px)}
+.auth-form button{padding:8px;font-size:13px;font-weight:700;border:none;background:var(--amber);color:var(--amber-ink);border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);letter-spacing:0.01em}
+.auth-form button:hover{background:var(--amber-bright);box-shadow:0 4px 16px var(--amber-line)}
 .auth-form button:active{transform:scale(0.98)}
 .auth-form button:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
 .auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--text-secondary);font-size:11px;font-weight:500}
 .auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--border)}
-.btn-google{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;font-weight:600;font-family:inherit;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition)}
-.btn-google:hover{background:var(--surface-hover);border-color:var(--text-secondary);transform:translateY(-1px)}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;font-weight:600;font-family:inherit;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:var(--radius-sm);cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
+.btn-google:hover{background:var(--surface-hover);border-color:var(--text-secondary)}
 .auth-message{margin-top:8px;font-size:12px;text-align:center;min-height:18px;font-weight:600;color:var(--danger)}
 
 /* DASHBOARD - NAVBAR */
@@ -263,15 +263,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .navbar-logo{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:800;color:var(--amber);letter-spacing:-0.03em}
 .navbar-logo svg{width:18px;height:18px;stroke-width:2.5}
 .navbar-user{display:flex;align-items:center;gap:6px}
-.navbar-btn{font-size:11px;padding:5px 10px;border:none;background:var(--amber);color:var(--amber-ink);border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;transition:all var(--transition);white-space:nowrap;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
-.theme-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:8px;cursor:pointer;transition:all var(--transition)}
+.navbar-btn{font-size:11px;padding:5px 10px;border:none;background:var(--amber);color:var(--amber-ink);border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.theme-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:8px;cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .theme-btn:hover{background:var(--surface-hover);color:var(--amber);border-color:var(--amber-dim)}
 .theme-btn svg{width:14px;height:14px}
 /* Tema legacy fuera: la superficie la hereda de VS Code (auto) o del
    override data-stacy-theme (light/dark) definido en :root. */
-.navbar-btn:hover{background:var(--amber-bright);box-shadow:0 4px 16px var(--amber-line);transform:translateY(-1px)}
+.navbar-btn:hover{background:var(--amber-bright);box-shadow:0 4px 16px var(--amber-line)}
 .navbar-btn:active{transform:scale(0.97)}
-.user-trigger{display:flex;align-items:center;gap:6px;cursor:pointer;padding:3px 5px 3px 10px;border-radius:10px;border:1px solid transparent;transition:all var(--transition);position:relative}
+.user-trigger{display:flex;align-items:center;gap:6px;cursor:pointer;padding:3px 5px 3px 10px;border-radius:10px;border:1px solid transparent;transition:background-color var(--transition),color var(--transition),border-color var(--transition);position:relative}
 .user-trigger:hover{background:var(--surface-hover);border-color:var(--border)}
 .user-label-1{font-size:12px;color:var(--text-secondary);font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .user-avatar{width:26px;height:26px;border-radius:50%;background:var(--amber);color:var(--amber-ink);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 0 2px var(--amber-dim);transition:box-shadow var(--transition)}
@@ -291,34 +291,36 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .profile-field-label{display:block;font-size:10px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
 .profile-field-value{font-size:13px;color:var(--text)}
 .profile-divider{height:1px;background:var(--border);margin:10px 0}
-.profile-logout{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border:none;background:transparent;color:var(--danger);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);transition:all var(--transition)}
-.profile-logout:hover{background:rgba(248,81,73,0.1);transform:translateX(2px)}
-.profile-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;background:transparent;color:var(--text);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);transition:all var(--transition)}
+.profile-logout{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border:none;background:transparent;color:var(--danger);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
+.profile-logout:hover{background:rgba(248,81,73,0.1)}
+.profile-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;background:transparent;color:var(--text);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .profile-item:hover{background:var(--surface-hover)}
 
 /* TABS */
 .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;padding:4px 6px 0;gap:2px}
-.tab{position:relative;padding:10px 18px;font-size:12px;font-weight:700;font-family:inherit;background:transparent;border:none;color:var(--text-secondary);cursor:pointer;transition:all var(--transition);white-space:nowrap;border-radius:10px 10px 0 0;margin-bottom:0;letter-spacing:0.01em}
+.tab{position:relative;padding:10px 18px;font-size:12px;font-weight:700;font-family:inherit;background:transparent;border:none;color:var(--text-secondary);cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap;border-radius:10px 10px 0 0;margin-bottom:0;letter-spacing:0.01em}
 .tab:hover{color:var(--text);background:var(--surface-hover)}
 .tab.active{color:var(--amber);background:transparent}
 .tab.active::after{content:'';position:absolute;bottom:0;left:10px;right:10px;height:2px;background:var(--amber);border-radius:2px 2px 0 0}
 .tab-count{font-size:10px;background:var(--amber-dim);color:var(--amber);border-radius:999px;padding:1px 8px;font-weight:700;margin-left:7px;display:inline-block;line-height:1.6}
 
 .content{padding:0 14px 16px}
-.panel{display:none;animation:fadeIn 200ms ease}
-.panel.active{display:block}
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn 120ms var(--ease-out)}
 
 .panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 0 8px;border-bottom:1px solid var(--border);margin-bottom:4px}
 .panel-header h2{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-0.02em}
 .panel-header .badge{font-size:10px;color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-line);border-radius:999px;padding:2px 10px;font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.panel-header .action-btn{background:var(--amber-dim);border:1px solid var(--amber-line);color:var(--amber);cursor:pointer;font-size:20px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:all var(--transition)}
+.panel-header .action-btn{display:inline-flex;align-items:center;gap:4px;background:var(--amber-dim);border:1px solid var(--amber-line);color:var(--amber);cursor:pointer;font-size:11px;font-weight:700;padding:5px 10px;font-family:inherit;border-radius:8px;transition:background-color var(--transition),color var(--transition)}
 .panel-header .action-btn:hover{background:var(--amber);color:var(--amber-ink)}
+.panel-header .action-btn:active{transform:scale(0.97)}
 
-.toolbar{display:flex;gap:8px;margin:8px 0;align-items:center;flex-wrap:wrap}
-.toolbar .search-bar{flex:1;min-width:140px}
-.toolbar .search-bar input{width:100%;padding:7px 10px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;transition:all var(--transition)}
+.toolbar{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.toolbar-row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.toolbar .search-bar{flex:1;min-width:0}
+.toolbar .search-bar input{width:100%;padding:7px 10px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .toolbar .search-bar input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
-.folder-filter-bar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:color-mix(in srgb,var(--amber) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--amber) 20%,var(--border));border-radius:8px;margin:6px 0;transition:all var(--transition)}
+.folder-filter-bar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:color-mix(in srgb,var(--amber) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--amber) 20%,var(--border));border-radius:8px;margin:6px 0;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .folder-filter-bar:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim);background:color-mix(in srgb,var(--amber) 12%,var(--surface))}
 .folder-filter-bar svg{flex-shrink:0;color:var(--text-secondary);opacity:0.6}
 .folder-filter-bar input{flex:1;min-width:0;border:none;background:none;font-size:12px;font-family:inherit;color:var(--text);outline:none}
@@ -326,15 +328,16 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .machine-select-wrap{position:relative;display:flex;align-items:center;flex-shrink:0}
 .machine-select-icon{position:absolute;left:8px;color:var(--text-secondary);opacity:0.5;pointer-events:none;flex-shrink:0;width:14px;height:14px;z-index:1}
 .machine-select-icon:hover{opacity:0.8}
-.machine-select{font-size:12px;padding:6px 8px 6px 28px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;cursor:pointer;flex-shrink:0;max-width:170px;transition:border-color var(--transition);appearance:auto;-webkit-appearance:auto}
+.machine-select{font-size:12px;padding:6px 8px 6px 28px;font-family:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;cursor:pointer;flex-shrink:1;min-width:0;max-width:130px;transition:border-color var(--transition);appearance:auto;-webkit-appearance:auto}
 .machine-select:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
 .view-toggle{display:flex;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--border);border-radius:10px;flex-shrink:0}
-.view-btn{font-size:11px;padding:4px 10px;border:none;background:transparent;color:var(--text-secondary);border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit;transition:all var(--transition);white-space:nowrap}
+.view-btn{font-size:11px;padding:4px 10px;border:none;background:transparent;color:var(--text-secondary);border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap}
 .view-btn:hover{color:var(--text)}
 .view-btn.active{background:var(--bg);color:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.2)}
-.toolbar-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;transition:all var(--transition);white-space:nowrap;flex-shrink:0}
-.toolbar-btn:hover{background:var(--surface-hover);border-color:var(--text-secondary);transform:translateY(-1px)}
+.toolbar-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap;flex-shrink:0}
+.toolbar-btn:hover{background:var(--surface-hover);border-color:var(--text-secondary)}
 .toolbar-btn:active{transform:scale(0.97)}
+.toolbar-btn--icon{padding:5px 7px;flex-shrink:0}
 
 /* SKELETON — bloques con contraste real sobre cualquier fondo + brillo */
 .skeleton{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:inset 0 1px 0 var(--line-hi,rgba(255,255,255,0.03))}
@@ -343,7 +346,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* COMMAND LIST */
 .cmd-list{display:flex;flex-direction:column;gap:4px;margin:4px 0 0;padding:0}
-.cmd-item{padding:10px 12px;background:var(--surface);border-radius:0 var(--radius-sm) var(--radius-sm) 0;border:1px solid var(--border);border-left:3px solid var(--amber-dim);cursor:pointer;transition:all var(--transition);animation:fadeSlideIn 220ms ease both;position:relative}
+.cmd-item{padding:10px 12px;background:var(--surface);border-radius:0 var(--radius-sm) var(--radius-sm) 0;border:1px solid var(--border);border-left:3px solid var(--amber-dim);cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);animation:fadeSlideIn 220ms ease both;position:relative}
 .cmd-item:nth-child(1){animation-delay:0ms}
 .cmd-item:nth-child(2){animation-delay:30ms}
 .cmd-item:nth-child(3){animation-delay:60ms}
@@ -363,7 +366,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* FOLDER LIST */
 .folder-list{display:flex;flex-direction:column;gap:4px}
-.folder-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface);border:1px solid var(--border);position:relative;overflow:hidden;animation:fadeSlideIn var(--dur) var(--ease) both}
+.folder-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--radius);cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);background:var(--surface);border:1px solid var(--border);position:relative;overflow:hidden;animation:fadeSlideIn var(--dur) var(--ease) both}
 .folder-item:nth-child(1){animation-delay:0ms}
 .folder-item:nth-child(2){animation-delay:40ms}
 .folder-item:nth-child(3){animation-delay:80ms}
@@ -382,15 +385,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .folder-info{flex:1;min-width:0;position:relative;z-index:1}
 .folder-name{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .folder-desc{font-size:11px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
-.folder-arrow{flex-shrink:0;width:18px;height:18px;color:var(--text-secondary);opacity:0.4;transition:all var(--transition);position:relative;z-index:1}
-.folder-item:hover .folder-arrow{opacity:1;color:var(--amber);transform:translateX(5px)}
+.folder-arrow{flex-shrink:0;width:18px;height:18px;color:var(--text-secondary);opacity:0.4;transition:background-color var(--transition),color var(--transition),border-color var(--transition);position:relative;z-index:1}
+.folder-item:hover .folder-arrow{opacity:1;color:var(--amber)}
 
-.folder-back{display:flex;align-items:center;gap:6px;padding:8px 2px;cursor:pointer;color:var(--amber);font-size:12px;font-weight:600;transition:all var(--transition)}
+.folder-back{display:flex;align-items:center;gap:6px;padding:8px 2px;cursor:pointer;color:var(--amber);font-size:12px;font-weight:600;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .folder-back:hover{opacity:0.8;transform:translateX(-3px)}
 
 /* FOLDER ADD SUGGESTIONS */
 .folder-add-suggest{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;max-height:180px;overflow-y:auto}
-.folder-add-suggest .suggest-item{padding:8px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);transition:all var(--transition);color:var(--text)}
+.folder-add-suggest .suggest-item{padding:8px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background-color var(--transition),color var(--transition),border-color var(--transition);color:var(--text)}
 .folder-add-suggest .suggest-item:last-child{border-bottom:none}
 .folder-add-suggest .suggest-item:hover{background:var(--amber-dim);color:var(--amber)}
 .folder-add-suggest .suggest-item .suggest-cmd{font-family:var(--font-mono);font-size:11px;font-weight:500}
@@ -399,7 +402,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* NOTE LIST */
 #noteList{display:flex;flex-direction:column;gap:4px}
-.note-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);animation:fadeSlideIn var(--dur) var(--ease) both}
+.note-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);animation:fadeSlideIn var(--dur) var(--ease) both}
 .note-item:nth-child(1){animation-delay:0ms}
 .note-item:nth-child(2){animation-delay:40ms}
 .note-item:nth-child(3){animation-delay:80ms}
@@ -423,36 +426,39 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* EMPTY */
 .empty{text-align:center;padding:44px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;animation:fadeIn 300ms ease}
-.empty-icon{width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:var(--amber-dim);border-radius:18px;color:var(--amber);opacity:0.85;border:1px solid var(--amber-dim);box-shadow:0 0 30px var(--amber-dim)}
-.empty-icon svg{width:28px;height:28px}
-.empty-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.01em}
-.empty-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;max-width:260px;font-weight:450}
+.empty-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--amber-dim);border-radius:12px;color:var(--amber);border:1px solid var(--amber-line)}
+.empty-icon svg{width:22px;height:22px}
+.empty-title{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-0.01em}
+.empty-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;max-width:240px;font-weight:450}
+.empty-btn{display:inline-flex;align-items:center;gap:5px;margin-top:2px;padding:6px 12px;font-size:11px;font-weight:700;font-family:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
+.empty-btn:hover{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+.empty-btn:active{transform:scale(0.97)}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(6px);animation:fadeIn 180ms ease}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn 150ms var(--ease-out)}
 .modal-box{background:var(--surface);border:1px solid var(--amber-line);border-radius:var(--radius-lg);width:92%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg),0 0 60px var(--amber-dim);animation:slideIn 220ms cubic-bezier(0.16,1,0.3,1)}
 .modal-box.wide{max-width:520px}
 .modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);background:transparent;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
 .modal-header h3{margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em;color:var(--text)}
-.modal-close{background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:0;line-height:1;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all var(--transition)}
+.modal-close{background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:0;line-height:1;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background-color var(--transition),color var(--transition),border-color var(--transition)}
 .modal-close:hover{color:var(--text);background:var(--amber-dim)}
 .modal-body{padding:14px 16px}
-.modal-input{width:100%;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;transition:all var(--transition);box-sizing:border-box}
+.modal-input{width:100%;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;transition:background-color var(--transition),color var(--transition),border-color var(--transition);box-sizing:border-box}
 .modal-input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
-.modal-textarea{width:100%;min-height:120px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;resize:vertical;transition:all var(--transition);box-sizing:border-box;margin-top:6px;line-height:1.5}
+.modal-textarea{width:100%;min-height:120px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;resize:vertical;transition:background-color var(--transition),color var(--transition),border-color var(--transition);box-sizing:border-box;margin-top:6px;line-height:1.5}
 .modal-textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--border);background:color-mix(in srgb, var(--bg) 60%, transparent)}
-.modal-btn{padding:7px 16px;font-size:12px;font-weight:700;font-family:inherit;border:none;background:var(--amber);color:var(--amber-ink);border-radius:9px;cursor:pointer;transition:all var(--transition);letter-spacing:0.01em;box-shadow:0 2px 8px var(--amber-line)}
-.modal-btn:hover{background:var(--amber-bright);transform:translateY(-2px);box-shadow:0 4px 16px var(--amber-line)}
+.modal-btn{padding:7px 16px;font-size:12px;font-weight:700;font-family:inherit;border:none;background:var(--amber);color:var(--amber-ink);border-radius:9px;cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);letter-spacing:0.01em;box-shadow:0 2px 8px var(--amber-line)}
+.modal-btn:hover{background:var(--amber-bright)}
 .modal-btn:active{transform:scale(0.97)}
 .modal-btn-outline{background:transparent;color:var(--text-secondary);border:1px solid var(--border);box-shadow:none}
-.modal-btn-outline:hover{border-color:var(--text-secondary);color:var(--text);transform:translateY(-2px);box-shadow:none;background:var(--surface-hover)}
+.modal-btn-outline:hover{border-color:var(--text-secondary);color:var(--text);background:var(--surface-hover)}
 .modal-btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(248,81,73,0.3);box-shadow:none}
-.modal-btn-danger:hover{background:rgba(248,81,73,0.12);border-color:var(--danger);transform:translateY(-2px);box-shadow:0 4px 16px rgba(248,81,73,0.15)}
+.modal-btn-danger:hover{background:rgba(248,81,73,0.12);border-color:var(--danger)}
 
 /* CMD ACTION BTNS */
-.cmd-action-btn{font-size:10px;padding:3px 8px;border:none;background:var(--amber);color:var(--amber-ink);border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit;transition:all var(--transition);line-height:1.5}
-.cmd-action-btn:hover{background:var(--amber-bright);transform:translateY(-1px);box-shadow:0 2px 8px var(--amber-line)}
+.cmd-action-btn{font-size:10px;padding:3px 8px;border:none;background:var(--amber);color:var(--amber-ink);border-radius:7px;cursor:pointer;font-weight:600;font-family:inherit;transition:background-color var(--transition),color var(--transition),border-color var(--transition);line-height:1.5}
+.cmd-action-btn:hover{background:var(--amber-bright)}
 .cmd-action-btn:active{transform:scale(0.95)}
 
 /* DETAIL MODAL */
@@ -465,7 +471,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* OS SELECTOR */
 .os-selector{display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.os-tab{flex:1;padding:7px 10px;background:var(--bg);border:none;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--transition);text-align:center;font-family:inherit}
+.os-tab{flex:1;padding:7px 10px;background:var(--bg);border:none;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;transition:background-color var(--transition),color var(--transition),border-color var(--transition);text-align:center;font-family:inherit}
 .os-tab:not(:last-child){border-right:1px solid var(--border)}
 .os-tab.active{background:var(--amber-dim);color:var(--amber)}
 .os-tab:hover:not(.active){background:var(--surface-hover);color:var(--text)}
@@ -485,7 +491,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--amber-ink);font-size:12px;font-weight:600;padding:8px 18px;border-radius:10px;z-index:2000;opacity:0;transition:opacity 200ms ease;pointer-events:none;box-shadow:0 4px 16px var(--amber-line);white-space:nowrap}
 .toast.show{opacity:1}
 .toast.toast-undo{pointer-events:auto;cursor:default;padding:8px 14px}
-.toast-undo-btn{background:rgba(0,0,0,0.2);border:none;color:var(--amber-ink);font-weight:800;font-size:12px;padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:8px;font-family:inherit;transition:all 100ms ease}
+.toast-undo-btn{background:rgba(0,0,0,0.2);border:none;color:var(--amber-ink);font-weight:800;font-size:12px;padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:8px;font-family:inherit;transition:background-color 100ms ease}
 .toast-undo-btn:hover{background:rgba(0,0,0,0.35)}
 
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -551,9 +557,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   <div class="auth-bg"></div>
   <div class="auth-card">
     <div class="auth-card-header">
-      <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
-      <h1>STACY</h1>
-      <p class="auth-tagline">Historial de Comandos</p>
+      <div class="auth-brand">
+        <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <h1>STACY</h1>
+      </div>
     </div>
     <div class="auth-body">
       <div class="auth-tabs">
@@ -563,11 +570,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
       <form id="login-form" class="auth-form">
         <div class="input-group">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input type="text" id="login-user" placeholder="Usuario" required autofocus>
+          <input type="text" id="login-user" placeholder="Usuario" required>
         </div>
         <div class="input-group">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" id="login-pass" placeholder="Contrasena" required>
+          <input type="password" id="login-pass" placeholder="Contraseña" required>
         </div>
         <button type="submit" id="login-btn">Ingresar</button>
       </form>
@@ -586,11 +593,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
         </div>
         <div class="input-group">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input type="password" id="reg-pass" placeholder="Contrasena" required>
+          <input type="password" id="reg-pass" placeholder="Contraseña" required>
         </div>
         <button type="submit" id="reg-btn">Registrarse</button>
       </form>
-      <div class="auth-divider"><span>o continua con</span></div>
+      <div class="auth-divider"><span>o continúa con</span></div>
       <button id="google-login-btn" class="btn-google" type="button">
         <svg viewBox="0 0 24 24" width="16" height="16"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         <span>Continuar con Google</span>
@@ -611,7 +618,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
     </span>
   </div>
   <div class="navbar-user">
-    <button class="navbar-btn" data-action="bajar" title="Bajar comandos de este equipo"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Bajar comandos</button>
     <button id="themeToggleBtn" class="theme-btn" title="Cambiar tema"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
     <div class="user-trigger">
       <span class="user-label-1"></span>
@@ -623,31 +629,32 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 <div class="profile-overlay" id="profileOverlay"></div>
 <div class="profile-panel" id="profilePanel"></div>
 
-<div class="tabs">
-  <button class="tab active" data-tab="commands">COMANDOS <span class="tab-count">0</span></button>
-  <button class="tab" data-tab="folders">CARPETAS <span class="tab-count">0</span></button>
-  <button class="tab" data-tab="notes">NOTAS <span class="tab-count">0</span></button>
+<div class="tabs" role="tablist" aria-label="Secciones de STACY">
+  <button class="tab active" role="tab" aria-selected="true" data-tab="commands">COMANDOS <span class="tab-count">0</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="folders">CARPETAS <span class="tab-count">0</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="notes">NOTAS <span class="tab-count">0</span></button>
 </div>
 
 <div class="content">
   <!-- COMMANDS -->
   <div class="panel active" id="panel-commands">
     <div class="toolbar">
-      <div class="search-bar"><input type="text" id="cmdSearch" placeholder="Filtrar comandos..."></div>
-      <div class="machine-select-wrap">
-        <svg class="machine-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
-        <select class="machine-select" id="machineFilter">
-          <option value="">Todas las maquinas</option>
-        </select>
+      <div class="search-bar"><input type="text" id="cmdSearch" placeholder="Filtrar comandos..." aria-label="Filtrar comandos"></div>
+      <div class="toolbar-row">
+        <div class="machine-select-wrap">
+          <svg class="machine-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+          <select class="machine-select" id="machineFilter" aria-label="Filtrar por máquina">
+            <option value="">Todas las máquinas</option>
+          </select>
+        </div>
+        <div class="view-toggle" role="group" aria-label="Vista">
+          <button class="view-btn active" data-v="all">Todos</button>
+          <button class="view-btn" data-v="recent">Recientes</button>
+        </div>
+        <button id="refresh-btn" class="toolbar-btn toolbar-btn--icon" title="Actualizar" aria-label="Actualizar">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
       </div>
-      <div class="view-toggle">
-        <button class="view-btn active" data-v="all">Todos</button>
-        <button class="view-btn" data-v="recent">Ultimos 11</button>
-      </div>
-      <button id="refresh-btn" class="toolbar-btn">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        Actualizar
-      </button>
     </div>
     <div class="panel-header">
       <h2 id="panelTitle">Todos los comandos</h2>
@@ -657,15 +664,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
   <!-- FOLDERS -->
   <div class="panel" id="panel-folders">
-    <div class="folder-back" id="folderBack" style="display:none">← Volver a carpetas</div>
+    <div class="folder-back" id="folderBack" style="display:none"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Carpetas</div>
     <div id="folderListPanel">
-      <div class="panel-header"><h2>Carpetas</h2><button id="create-folder-btn" class="action-btn">+</button></div>
+      <div class="panel-header"><h2>Carpetas</h2><button id="create-folder-btn" class="action-btn" aria-label="Nueva carpeta"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nueva</button></div>
       <div class="folder-list" id="folderList"><div class="skeleton" style="height:60px"></div><div class="skeleton" style="height:60px;margin-top:6px"></div></div>
     </div>
     <div id="folderCmdPanel" style="display:none">
-      <div class="panel-header"><h2 id="folderCmdTitle">Carpeta</h2></div>
-      <div class="toolbar" style="margin:4px 0;flex-wrap:nowrap">
-        <div class="search-bar"><input type="text" id="folderCmdSearch" placeholder="Buscar comando para anadir..." autocomplete="off"></div>
+      <div class="panel-header"><h2 id="folderCmdTitle">Carpeta</h2><button id="folderAddBtn" class="action-btn" aria-label="Añadir comando a la carpeta"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Añadir</button></div>
+      <div id="folderAddWrap" class="toolbar" style="display:none;margin:4px 0">
+        <div class="search-bar"><input type="text" id="folderCmdSearch" placeholder="Buscar comando para añadir..." autocomplete="off" aria-label="Buscar comando para añadir"></div>
       </div>
       <div id="folderAddSuggestions" style="display:none"></div>
       <div class="folder-filter-bar"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="folderFilterInput" placeholder="Filtrar comandos de esta carpeta..." autocomplete="off"></div>
@@ -677,7 +684,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   <div class="panel" id="panel-notes">
     <div class="panel-header">
       <h2>Notas</h2>
-      <button id="create-note-btn" class="action-btn">+</button>
+      <button id="create-note-btn" class="action-btn" aria-label="Nueva nota"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nueva</button>
     </div>
     <div id="noteList"><div class="skeleton" style="height:60px"></div><div class="skeleton" style="height:60px;margin-top:6px"></div></div>
   </div>
@@ -701,8 +708,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
       </div>
       <!-- EDIT MODE -->
       <div id="noteEditMode" style="display:none">
-        <input type="text" class="modal-input" id="noteTitle" placeholder="Titulo de la nota">
-        <textarea class="modal-textarea" id="noteContent" placeholder="Escribe tu nota aqui..." style="min-height:140px"></textarea>
+        <input type="text" class="modal-input" id="noteTitle" placeholder="Título de la nota">
+        <textarea class="modal-textarea" id="noteContent" placeholder="Escribe tu nota aquí..." style="min-height:140px"></textarea>
       </div>
     </div>
     <div class="modal-footer" id="noteViewFooter">
@@ -725,7 +732,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
     </div>
     <div class="modal-body" id="detailModalBody">
       <div class="detail-field"><span class="detail-label">Comando</span><code class="detail-code" id="detailCmdCode"></code></div>
-      <div class="detail-field"><span class="detail-label">Maquina</span><span class="detail-value detail-maquina" id="detailMaquina"></span></div>
+      <div class="detail-field"><span class="detail-label">Máquina</span><span class="detail-value detail-maquina" id="detailMaquina"></span></div>
       <div class="detail-field"><span class="detail-label">Hora</span><span class="detail-value" id="detailHora"></span></div>
       <div class="detail-field"><span class="detail-label">Ruta</span><span class="detail-value detail-path" id="detailRuta"></span></div>
       <div class="detail-field" id="detailDescField" style="display:none">

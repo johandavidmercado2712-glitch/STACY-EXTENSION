@@ -116,6 +116,9 @@ document.addEventListener('click',function(e){
 
   // Folder back
   if(t.closest('#folderBack')){backFolders();return}
+  // Empty-state actions
+  if(t.closest('[data-action=\"nueva-carpeta\"]')){createFolder();return}
+  if(t.closest('[data-action=\"nueva-nota\"]')){openNote(0,'','');return}
 
   // Folder items
   var folderCard=t.closest('.folder-item');
@@ -259,20 +262,29 @@ function showToastUndo(m){
 
 // ============ COMMANDS TAB ============
 function switchTab(t){
-  document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('active');e.setAttribute('aria-selected','false')});
   document.querySelectorAll('.panel').forEach(function(e){e.classList.remove('active')});
-  document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
+  var tab=document.querySelector('.tab[data-tab="'+t+'"]');
+  tab.classList.add('active');
+  tab.setAttribute('aria-selected','true');
   document.getElementById('panel-'+t).classList.add('active');
-  if(t==='folders'){document.getElementById('folderListPanel').style.display='';document.getElementById('folderCmdPanel').style.display='none';document.getElementById('folderBack').style.display='none'}
+  if(t==='folders'){document.getElementById('folderListPanel').style.display='';document.getElementById('folderCmdPanel').style.display='none';document.getElementById('folderBack').style.display='none';resetFolderAdd()}
 }
 
+function updatePanelTitle(){
+  var v=_curView==='all'?'Todos los comandos':'Comandos recientes';
+  var m=document.getElementById('machineFilter').value;
+  if(m)v='Máquina: '+m;
+  document.getElementById('panelTitle').textContent=v;
+}
 function setView(v){
   _curView=v;
   document.querySelectorAll('.view-btn').forEach(function(b){b.classList.remove('active')});
   document.querySelector('.view-btn[data-v="'+v+'"]').classList.add('active');
-  document.getElementById('panelTitle').textContent=v==='all'?'Todos los comandos':'Ultimos 11 comandos';
+  updatePanelTitle();
   renderCmds();
 }
+document.getElementById('machineFilter').addEventListener('change',updatePanelTitle);
 var _srchTimer;
 function onSearch(){clearTimeout(_srchTimer);_srchTimer=setTimeout(renderCmds,200)}
 document.getElementById('cmdSearch').addEventListener('input',onSearch);
@@ -408,7 +420,19 @@ function backFolders(){
   document.getElementById('folderListPanel').style.display='';
   document.getElementById('folderCmdPanel').style.display='none';
   document.getElementById('folderBack').style.display='none';
+  resetFolderAdd();
 }
+function resetFolderAdd(){
+  var w=document.getElementById('folderAddWrap');
+  w.style.display='none';
+  document.getElementById('folderAddSuggestions').style.display='none';
+  document.getElementById('folderCmdSearch').value='';
+}
+document.getElementById('folderAddBtn').addEventListener('click',function(){
+  var w=document.getElementById('folderAddWrap');
+  if(w.style.display==='none'){w.style.display='';document.getElementById('folderCmdSearch').focus()}
+  else resetFolderAdd();
+});
 function cId(c){return c.COM_ID||c.id||c.comando_id||c.cmd_id||c.com_id||0}
 var _folderSrchTimer;
 function onFolderCmdSearch(){
@@ -447,10 +471,11 @@ function renderFolderFilter(){
     el.style.display=(!q||text.indexOf(q)!==-1)?'':'none';
   });
 }
-// Override openFolder to clear filter
+// Override openFolder to clear filter and add-search
 var _origOpenFolder=openFolder;
 openFolder=function(fid,fname){
   document.getElementById('folderFilterInput').value='';
+  resetFolderAdd();
   _origOpenFolder(fid,fname);
 };
 
