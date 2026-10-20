@@ -532,8 +532,6 @@ function renderNoteView(title,content){
       // rebuild from DOM is complex; instead update raw text line by line using data-idx
       var idx=parseInt(cb.getAttribute('data-idx'));
       if(!isNaN(idx)&&lines[idx]){
-        lines[idx]=lines[idx].replace(/\[ \]/,'[x]').replace(/\[x\]/i, cb.checked?'[x]':'[ ]');
-        // simpler: set marker based on checked
         lines[idx]=lines[idx].replace(/- \[[ xX]\]/, '- ['+(cb.checked?'x':' ')+']');
         document.getElementById('noteContent').value=lines.join('\n');
         var id=parseInt(document.getElementById('noteId').value)||0;
