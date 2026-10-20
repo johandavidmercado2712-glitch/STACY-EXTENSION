@@ -50,7 +50,7 @@ window.addEventListener('message',function(e){
         } else {
           ua.innerHTML='';
           ua.textContent=msg.initial||msg.username[0];
-          ua.style.background='var(--accent)';
+          ua.style.background='var(--amber)';
         }
       }
     }
@@ -364,29 +364,39 @@ function stopAutoRefresh(){clearInterval(_refreshTimer)}
 var _origSetData = window.addEventListener;
 // Hook into message handler to start auto-refresh after login
 
-// ============ THEME TOGGLE ============
-document.getElementById('themeToggleBtn').addEventListener('click',function(){
-  var hasLight=document.body.classList.contains('stacy-light');
-  var hasDark=document.body.classList.contains('stacy-dark');
-  if(!hasLight&&!hasDark){
-    if(document.body.classList.contains('vscode-dark')){
-      document.body.classList.add('stacy-light');
-      localStorage.setItem('stacy-theme','light');
-    }else{
-      document.body.classList.add('stacy-dark');
-      localStorage.setItem('stacy-theme','dark');
-    }
-  }else{
-    document.body.classList.remove('stacy-light','stacy-dark');
-    localStorage.removeItem('stacy-theme');
-  }
-});
-// Restore saved theme
-(function(){
+// ============ THEME TOGGLE (3 estados: auto -> light -> dark) ============
+// auto (default) = el panel hereda el tema de VS Code; light/dark = override
+// manual con la paleta calida de STACY-PROGRAM (data-stacy-theme en :root).
+var STACY_THEME_ORDER=['auto','light','dark'];
+var STACY_THEME_ICONS={
+  auto:'<svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+  light:'<svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  dark:'<svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+var STACY_THEME_TITLES={
+  auto:'Tema: auto (sigue el tema de VS Code)',
+  light:'Tema: claro (STACY)',
+  dark:'Tema: oscuro (STACY)'
+};
+function applyStacyTheme(t){
+  if(t!=='light'&&t!=='dark')t='auto';
+  if(t==='auto')document.body.removeAttribute('data-stacy-theme');
+  else document.body.setAttribute('data-stacy-theme',t);
+  var btn=document.getElementById('themeToggleBtn');
+  if(btn){btn.innerHTML=STACY_THEME_ICONS[t];btn.title=STACY_THEME_TITLES[t]}
+}
+function currentStacyTheme(){
   var saved=localStorage.getItem('stacy-theme');
-  if(saved==='light')document.body.classList.add('stacy-light');
-  else if(saved==='dark')document.body.classList.add('stacy-dark');
-})();
+  return saved==='light'||saved==='dark'?saved:'auto';
+}
+applyStacyTheme(currentStacyTheme());
+document.getElementById('themeToggleBtn').addEventListener('click',function(){
+  var i=STACY_THEME_ORDER.indexOf(currentStacyTheme());
+  var next=STACY_THEME_ORDER[(i+1)%STACY_THEME_ORDER.length];
+  if(next==='auto')localStorage.removeItem('stacy-theme');
+  else localStorage.setItem('stacy-theme',next);
+  applyStacyTheme(next);
+});
 
 // Copy button delegation for folder cmd list
 document.getElementById('folderCmdList').addEventListener('click',function(e){
