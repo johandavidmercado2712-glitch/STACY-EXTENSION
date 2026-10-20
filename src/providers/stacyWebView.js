@@ -524,8 +524,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .content{padding:0 8px 12px}
   .toolbar{gap:4px;margin:4px 0}
   .toolbar .search-bar{min-width:80px;flex:1 1 100%;order:-1}
-  .machine-select{font-size:11px;padding:5px 6px 5px 24px;max-width:140px}
-  .machine-select-icon{width:12px;height:12px;left:6px}
+  .machine-select{font-size:11px;padding:5px 6px;max-width:140px}
   .view-btn{font-size:10px;padding:3px 6px}
   .toolbar-btn{font-size:10px;padding:4px 6px}
   .panel-header{padding:8px 0 4px}
