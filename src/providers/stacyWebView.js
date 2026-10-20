@@ -866,6 +866,13 @@ class StacyWebViewProvider {
         case "copy":
           vscode.env.clipboard.writeText(msg.text);
           break;
+        case "runInTerminal":
+          try {
+            let term = vscode.window.activeTerminal;
+            if (!term) { term = vscode.window.createTerminal("STACY"); term.show(); }
+            term.sendText(msg.text, true);
+          } catch (e) { vscode.window.showErrorMessage("Error: " + e.message); }
+          break;
         case "refresh":
           vscode.commands.executeCommand("stacy.refresh");
           break;
