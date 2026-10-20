@@ -170,6 +170,8 @@ function renderProfile(prof, username) {
     ${p.apellidos ? '<div class="profile-field"><span class="profile-field-label">Apellidos</span><span class="profile-field-value">' + escHtml(p.apellidos) + "</span></div>" : ""}
     ${p.correo ? '<div class="profile-field"><span class="profile-field-label">Correo</span><span class="profile-field-value">' + escHtml(p.correo) + "</span></div>" : ""}
     <div class="profile-divider"></div>
+    <div class="profile-field"><span class="profile-field-label">Notificaciones</span><label style="display:flex;align-items:center;gap:6px;margin-left:auto"><input type="checkbox" id="notifToggle"> Activar</label></div>
+    <div class="profile-divider"></div>
     <button class="profile-item" data-action="bajar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Bajar comandos de este equipo</button>
     <button class="profile-logout"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Cerrar sesion</button>
   </div>`;
